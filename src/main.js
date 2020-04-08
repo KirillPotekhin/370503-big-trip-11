@@ -321,3 +321,7 @@ const createTripEventEditTemplate = () => {
     </li>`
   );
 };
+
+const render = (container, template, place = `beforeend`) => {
+  return container.insertAdjacentHTML(place, template);
+};
