@@ -325,3 +325,31 @@ const createTripEventEditTemplate = () => {
 const render = (container, template, place = `beforeend`) => {
   return container.insertAdjacentHTML(place, template);
 };
+
+const tripMainElement = document.querySelector(`.trip-main`);
+
+render(tripMainElement, createTripInfoTemplate(), `afterbegin`);
+
+const tripControlElement = tripMainElement.querySelector(`.trip-controls`);
+const tripTitlesControlElements = tripControlElement.querySelectorAll(`h2`);
+
+render(tripTitlesControlElements[0], createTripTabTemplate(), `afterend`);
+render(tripControlElement, createTripFilterTemplate());
+
+const tripEventElement = document.querySelector(`.trip-events`);
+
+render(tripEventElement, createTripSortTemplate());
+render(tripEventElement, createTripBordTemplate());
+
+const tripDayElement = tripEventElement.querySelector(`.trip-days`);
+
+for (let i = 0; i < EVENT_DAY; i++) {
+  render(tripDayElement, createTripDayTemplate());
+  for (let i = 0; i < EVENT_COUNT; i++) {
+    const tripEventsListElement = tripDayElement.querySelector(`.trip-events__list`);
+    render(tripEventsListElement, createTripEventTemplate());
+  }
+}
+
+const tripEventsListElement = tripDayElement.querySelector(`.trip-events__list`);
+render(tripEventsListElement, createTripEventEditTemplate(), `afterbegin`);
