@@ -1,7 +1,7 @@
 # Личный проект «Большое путешествие» [![Build status][travis-image]][travis-url]
 
 * Студент: [Кирилл Потехин](https://up.htmlacademy.ru/ecmascript/11/user/370503).
-* Наставник: `Неизвестно`.
+* Наставник: [Евгений Датский](https://htmlacademy.ru/profile/id129440).
 
 ---
 
