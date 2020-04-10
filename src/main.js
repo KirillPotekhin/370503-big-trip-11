@@ -7,7 +7,7 @@ import {createTripInfoTemplate} from "./components/trip-info.js";
 import {createTripTabTemplate} from "./components/trip-tab.js";
 import {createTripFilterTemplate} from "./components/trip-filter.js";
 import {createTripSortTemplate} from "./components/trip-sort.js";
-import {createTripBordTemplate} from "./components/trip-bord.js";
+import {createTripBoardTemplate} from "./components/trip-board.js";
 import {createTripDayTemplate} from "./components/trip-day.js";
 import {createTripEventTemplate} from "./components/trip-event.js";
 import {createTripEventEditTemplate} from "./components/trip-event-edit.js";
@@ -29,7 +29,7 @@ render(tripControlElement, createTripFilterTemplate());
 const tripEventElement = document.querySelector(`.trip-events`);
 
 render(tripEventElement, createTripSortTemplate());
-render(tripEventElement, createTripBordTemplate());
+render(tripEventElement, createTripBoardTemplate());
 
 const tripDayElement = tripEventElement.querySelector(`.trip-days`);
 
