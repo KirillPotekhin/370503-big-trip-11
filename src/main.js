@@ -1,7 +1,8 @@
 'use strict';
 
-const EVENT_DAY = 1;
-const EVENT_COUNT = 3;
+const EVENT_COUNT = 20;
+
+import {generateEvent, generateEvents} from "./mock/event.js";
 
 import {createTripInfoTemplate} from "./components/trip-info.js";
 import {createTripTabTemplate} from "./components/trip-tab.js";
@@ -16,9 +17,11 @@ const render = (container, template, place = `beforeend`) => {
   return container.insertAdjacentHTML(place, template);
 };
 
+const events = generateEvents(EVENT_COUNT);
+
 const tripMainElement = document.querySelector(`.trip-main`);
 
-render(tripMainElement, createTripInfoTemplate(), `afterbegin`);
+render(tripMainElement, createTripInfoTemplate(events), `afterbegin`);
 
 const tripControlElement = tripMainElement.querySelector(`.trip-controls`);
 const tripTitlesControlElements = tripControlElement.querySelectorAll(`h2`);
@@ -33,13 +36,32 @@ render(tripEventElement, createTripBoardTemplate());
 
 const tripDayElement = tripEventElement.querySelector(`.trip-days`);
 
-for (let i = 0; i < EVENT_DAY; i++) {
-  render(tripDayElement, createTripDayTemplate());
-  for (let j = 0; j < EVENT_COUNT; j++) {
-    const tripEventsListElement = tripDayElement.querySelector(`.trip-events__list`);
-    render(tripEventsListElement, createTripEventTemplate());
-  }
-}
+const getRouteDateList = () => {
+  let dates = [];
+  events.forEach((it) => {
+    dates.push(Date.parse(new Date(it.startTime).toLocaleDateString('en-US')));
+});
+  dates = Array.from(new Set([...dates])).sort((a, b) => a - b);
+  return dates;
+};
 
-const tripEventsListElement = tripDayElement.querySelector(`.trip-events__list`);
-render(tripEventsListElement, createTripEventEditTemplate(), `afterbegin`);
+const getRouteDate = () => {
+  let days = [];
+  getRouteDateList().forEach((it, i) => {
+    days.push(events.slice().filter((item) => Date.parse(new Date(item.startTime).toLocaleDateString('en-US')) === getRouteDateList()[i]));
+});
+  return days;
+};
+
+
+getRouteDate().forEach((routeDate, i) => {
+  render(tripDayElement, createTripDayTemplate(getRouteDate()[i][0].startTime, i + 1));
+  routeDate.forEach((eventsDate, j) => {
+    const tripEventsListElement = tripDayElement.querySelectorAll(`.trip-events__list`);
+    render(tripEventsListElement[tripEventsListElement.length - 1], createTripEventTemplate(routeDate[j]));
+});
+});
+
+const tripEventsListElement = tripDayElement.querySelectorAll(`.trip-events__list`);
+tripEventsListElement[0].querySelectorAll(`.trip-events__item`)[0].remove();
+render(tripEventsListElement[0], createTripEventEditTemplate(getRouteDate()[0][0]), `afterbegin`);
