@@ -1,5 +1,5 @@
 import {TYPES} from "../const.js";
-import {timeDisplay} from "../utils.js";
+import {createElement, timeDisplay} from "../utils.js";
 
 const createEventTypeMarkup = (types) => {
   return types
@@ -41,14 +41,14 @@ const createEventPhotoMarkup = (photos) => {
     }).join(`\n`);
 };
 
-export const createTripEventEditTemplate = (event) => {
+const createTripEventEditTemplate = (event) => {
   const {type, city, startTime, endTime, description, photos, price, optionAll, isFavorite} = event;
   const eventTypeTransferMarkup = createEventTypeMarkup(TYPES.slice(0, 7));
   const eventTypeActivityMarkup = createEventTypeMarkup(TYPES.slice(-3));
   const eventOptionMarkup = createEventOptionMarkup(optionAll);
   const eventPhotoMarkup = createEventPhotoMarkup(photos);
   return (
-    ` <li class="trip-events__item">
+    `<li class="trip-events__item">
       <form class="event  event--edit" action="#" method="post">
         <header class="event__header">
           <div class="event__type-wrapper">
@@ -143,3 +143,26 @@ export const createTripEventEditTemplate = (event) => {
     </li>`
   );
 };
+
+export default class TripEventEdit {
+  constructor(event) {
+    this._event = event;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripEventEditTemplate(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

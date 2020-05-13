@@ -1,5 +1,5 @@
 import {DAY, HOUR, MINUTE} from "../const.js";
-import {timeDisplay} from "../utils.js";
+import {createElement, timeDisplay} from "../utils.js";
 
 const getDifferenceTime = (startTime, endTime) => {
   const differenceTime = Math.floor(endTime - startTime);
@@ -27,7 +27,7 @@ const createEventOptionMarkup = (optionAll) => {
   }).join(`\n`);
 };
 
-export const createTripEventTemplate = (event) => {
+const createTripEventTemplate = (event) => {
   const {type, city, startTime, endTime, price, optionAll} = event;
   const startTimeDate = new Date(startTime);
   const endTimeDate = new Date(endTime);
@@ -65,3 +65,26 @@ export const createTripEventTemplate = (event) => {
     </li>`
   );
 };
+
+export default class TripEvent {
+  constructor(event) {
+    this._event = event;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripEventTemplate(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
