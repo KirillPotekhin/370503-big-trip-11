@@ -1,8 +1,6 @@
-'use strict';
-
 const EVENT_COUNT = 20;
 
-import {generateEvent, generateEvents} from "./mock/event.js";
+import {generateEvents} from "./mock/event.js";
 
 import {createTripInfoTemplate} from "./components/trip-info.js";
 import {createTripTabTemplate} from "./components/trip-tab.js";
@@ -37,20 +35,18 @@ render(tripEventElement, createTripBoardTemplate());
 const tripDayElement = tripEventElement.querySelector(`.trip-days`);
 
 const getRouteDateList = () => {
-  let dates = [];
-  events.forEach((it) => {
-    dates.push(Date.parse(new Date(it.startTime).toLocaleDateString('en-US')));
-});
-  dates = Array.from(new Set([...dates])).sort((a, b) => a - b);
-  return dates;
+  let datesEvents = events.map((event) => {
+    return (Date.parse(new Date(event.startTime).toLocaleDateString(`en-US`)));
+  });
+  datesEvents = Array.from(new Set([...datesEvents])).sort((a, b) => a - b);
+  return datesEvents;
 };
 
 const getRouteDate = () => {
-  let days = [];
-  getRouteDateList().forEach((it, i) => {
-    days.push(events.slice().filter((item) => Date.parse(new Date(item.startTime).toLocaleDateString('en-US')) === getRouteDateList()[i]));
-});
-  return days;
+  return getRouteDateList().
+    map((it, i) => {
+      return events.slice().filter((item) => Date.parse(new Date(item.startTime).toLocaleDateString(`en-US`)) === getRouteDateList()[i]);
+    });
 };
 
 
@@ -59,7 +55,7 @@ getRouteDate().forEach((routeDate, i) => {
   routeDate.forEach((eventsDate, j) => {
     const tripEventsListElement = tripDayElement.querySelectorAll(`.trip-events__list`);
     render(tripEventsListElement[tripEventsListElement.length - 1], createTripEventTemplate(routeDate[j]));
-});
+  });
 });
 
 const tripEventsListElement = tripDayElement.querySelectorAll(`.trip-events__list`);
