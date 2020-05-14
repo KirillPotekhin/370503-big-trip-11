@@ -1,4 +1,6 @@
-export const createTripInfoTemplate = (events) => {
+import {createElement} from "../utils.js";
+
+const createTripInfoTemplate = (events) => {
   const eventsSort = events.slice().sort((a, b) => a.startTime - b.startTime);
   const startPoint = eventsSort[0];
   const endPoint = eventsSort[eventsSort.length - 1];
@@ -37,3 +39,26 @@ export const createTripInfoTemplate = (events) => {
     </section>`
   );
 };
+
+export default class TripEvent {
+  constructor(events) {
+    this._events = events;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripInfoTemplate(this._events);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

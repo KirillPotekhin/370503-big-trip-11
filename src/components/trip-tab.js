@@ -1,4 +1,6 @@
-export const createTripTabTemplate = () => {
+import {createElement} from "../utils.js";
+
+const createTripTabTemplate = () => {
   return (
     `<nav class="trip-controls__trip-tabs  trip-tabs">
       <a class="trip-tabs__btn  trip-tabs__btn--active" href="#">Table</a>
@@ -6,3 +8,25 @@ export const createTripTabTemplate = () => {
     </nav>`
   );
 };
+
+export default class TripTab {
+  constructor() {
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripTabTemplate();
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
