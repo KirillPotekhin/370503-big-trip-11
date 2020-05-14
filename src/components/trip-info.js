@@ -19,8 +19,11 @@ const createTripInfoTemplate = (events) => {
   }
 
   const infoDatesStart = eventsSort.length ? (new Date(startPoint.startTime).toLocaleDateString(`en-US`, {month: `short`, day: `numeric`})) : ``;
-  const infoDatesEndcondition = new Date(startPoint.startTime).getMonth() === new Date(endPoint.endTime).getMonth() ? new Date(endPoint.endTime).toLocaleDateString(`en-US`, {day: `numeric`}) : new Date(endPoint.endTime).toLocaleDateString(`en-US`, {month: `short`, day: `numeric`});
-  const infoDatesEnd = eventsSort.length ? (infoDatesEndcondition) : ``;
+  const getInfoDatesEndCondition = () => {
+    return new Date(startPoint.startTime).getMonth() === new Date(endPoint.endTime).getMonth() ? new Date(endPoint.endTime).toLocaleDateString(`en-US`, {day: `numeric`}) : new Date(endPoint.endTime).toLocaleDateString(`en-US`, {month: `short`, day: `numeric`});
+  };
+
+  const infoDatesEnd = eventsSort.length ? getInfoDatesEndCondition() : ``;
   const infoDates = eventsSort.length ? `${infoDatesStart} \u2014 ${infoDatesEnd}` : ``;
 
   const infoCost = eventsSort.length ? eventsSort.reduce((acc, it) => acc + it.price, 0) : 0;
@@ -40,7 +43,7 @@ const createTripInfoTemplate = (events) => {
   );
 };
 
-export default class TripEvent {
+export default class TripInfo {
   constructor(events) {
     this._events = events;
     this._element = null;
