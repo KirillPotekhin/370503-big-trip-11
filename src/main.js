@@ -8,6 +8,7 @@ import TripBoard from "./components/trip-board.js";
 import TripDay from "./components/trip-day.js";
 import TripEvent from "./components/trip-event.js";
 import TripEventEdit from "./components/trip-event-edit.js";
+import NoPoint from "./components/no-point.js";
 import {RenderPosition, render} from "./utils.js";
 
 const EVENT_COUNT = 20;
@@ -24,27 +25,50 @@ render(tripTitlesControlElements[0], new TripTab().getElement(), RenderPosition.
 render(tripControlElement, new TripFilter().getElement(), RenderPosition.BEFOREEND);
 
 const renderEvent = (eventListElement, event) => {
-  const onEventRollupButtonClick = () => {
+  const replaceEventToEdit = () => {
     eventListElement.replaceChild(tripEventEdit.getElement(), tripEvent.getElement());
   };
 
-  const onEventEditFormSubmit = (evt) => {
-    evt.preventDefault();
+  const replaceEditToEvent = () => {
     eventListElement.replaceChild(tripEvent.getElement(), tripEventEdit.getElement());
+  };
+
+  const onEscKeyDown = (evt) => {
+    const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
+    if (isEscKey) {
+      replaceEditToEvent();
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    }
   };
   const tripEvent = new TripEvent(event);
   const eventRollupButton = tripEvent.getElement().querySelector(`.event__rollup-btn`);
-  eventRollupButton.addEventListener(`click`, onEventRollupButtonClick);
+  eventRollupButton.addEventListener(`click`, () => {
+    replaceEventToEdit();
+    document.addEventListener(`keydown`, onEscKeyDown);
+  });
 
   const tripEventEdit = new TripEventEdit(event);
   const eventEditForm = tripEventEdit.getElement().querySelector(`.event--edit`);
-  eventEditForm.addEventListener(`submit`, onEventEditFormSubmit);
+  eventEditForm.addEventListener(`submit`, (evt) => {
+    evt.preventDefault();
+    replaceEditToEvent();
+    document.removeEventListener(`keydown`, onEscKeyDown);
+  });
+  eventEditForm.addEventListener(`click`, () => {
+    replaceEditToEvent();
+    document.removeEventListener(`keydown`, onEscKeyDown);
+  });
 
   render(eventListElement, tripEvent.getElement(), RenderPosition.BEFOREEND);
 };
 
 const renderEventList = (eventsList) => {
   const tripEventElement = document.querySelector(`.trip-events`);
+
+  if (!events.length) {
+    render(tripEventElement, new NoPoint().getElement(), RenderPosition.BEFOREEND);
+    return;
+  }
 
   render(tripEventElement, new TripSort().getElement(), RenderPosition.BEFOREEND);
   render(tripEventElement, new TripBoard().getElement(), RenderPosition.BEFOREEND);
