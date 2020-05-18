@@ -4,7 +4,7 @@ import TripDay from "../components/trip-day.js";
 import TripEvent from "../components/trip-event.js";
 import TripEventEdit from "../components/trip-event-edit.js";
 import NoPoint from "../components/no-point.js";
-import {RenderPosition, render, replace, remove} from "../utils/render.js";
+import {RenderPosition, render, replace} from "../utils/render.js";
 
 const renderEvent = (eventListElement, event) => {
   const replaceEventToEdit = () => {
