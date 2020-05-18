@@ -1,5 +1,5 @@
 import {DAY, HOUR, MINUTE} from "../const.js";
-import {timeDisplay} from "../utils.js";
+import {timeDisplay} from "../utils/common.js";
 import AbstractComponent from "./abstract-component.js";
 
 const getDifferenceTime = (startTime, endTime) => {
@@ -75,5 +75,9 @@ export default class TripEvent extends AbstractComponent {
 
   getTemplate() {
     return createTripEventTemplate(this._event);
+  }
+
+  setEventRollupButtonClickHandler(handler) {
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, handler);
   }
 }
