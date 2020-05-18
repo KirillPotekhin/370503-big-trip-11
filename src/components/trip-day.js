@@ -1,4 +1,4 @@
-import {createElement} from "../utils.js";
+import AbstractComponent from "./abstract-component.js";
 
 const createTripDayTemplate = (dateValue, number = 1) => {
   const date = new Date(dateValue).toLocaleDateString(`en-US`, {day: `numeric`, month: `short`});
@@ -15,26 +15,14 @@ const createTripDayTemplate = (dateValue, number = 1) => {
   );
 };
 
-export default class TripDay {
+export default class TripDay extends AbstractComponent {
   constructor(dateValue, number) {
+    super();
     this._dateValue = dateValue;
     this._number = number;
-    this._element = null;
   }
 
   getTemplate() {
     return createTripDayTemplate(this._dateValue, this._number);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

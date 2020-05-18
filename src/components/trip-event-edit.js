@@ -1,5 +1,6 @@
 import {TYPES} from "../const.js";
-import {createElement, timeDisplay} from "../utils.js";
+import {timeDisplay} from "../utils/common.js";
+import AbstractComponent from "./abstract-component.js";
 
 const createEventTypeMarkup = (types) => {
   return types
@@ -144,25 +145,21 @@ const createTripEventEditTemplate = (event) => {
   );
 };
 
-export default class TripEventEdit {
+export default class TripEventEdit extends AbstractComponent {
   constructor(event) {
+    super();
     this._event = event;
-    this._element = null;
   }
 
   getTemplate() {
     return createTripEventEditTemplate(this._event);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  setEventEditSubmitHandler(handler) {
+    this.getElement().querySelector(`.event--edit`).addEventListener(`submit`, handler);
   }
 
-  removeElement() {
-    this._element = null;
+  setEventEditRollupButtonClickHandler(handler) {
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, handler);
   }
 }

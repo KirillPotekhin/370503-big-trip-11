@@ -1,5 +1,6 @@
 import {DAY, HOUR, MINUTE} from "../const.js";
-import {createElement, timeDisplay} from "../utils.js";
+import {timeDisplay} from "../utils/common.js";
+import AbstractComponent from "./abstract-component.js";
 
 const getDifferenceTime = (startTime, endTime) => {
   const differenceTime = Math.floor(endTime - startTime);
@@ -66,25 +67,17 @@ const createTripEventTemplate = (event) => {
   );
 };
 
-export default class TripEvent {
+export default class TripEvent extends AbstractComponent {
   constructor(event) {
+    super();
     this._event = event;
-    this._element = null;
   }
 
   getTemplate() {
     return createTripEventTemplate(this._event);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  setEventRollupButtonClickHandler(handler) {
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, handler);
   }
 }
