@@ -1,4 +1,4 @@
-import TripSort from "../components/trip-sort.js";
+import TripSort, {SortType} from "../components/trip-sort.js";
 import TripBoard from "../components/trip-board.js";
 import TripDay from "../components/trip-day.js";
 import TripEvent from "../components/trip-event.js";
@@ -43,6 +43,25 @@ const renderEvent = (eventListElement, event) => {
   render(eventListElement, tripEvent, RenderPosition.BEFOREEND);
 };
 
+const renderEvents = (container, routePointDates, sortType) => {
+  routePointDates.forEach((routeDate, i) => {
+    render(container, new TripDay(routePointDates[i][0].startTime, i + 1), RenderPosition.BEFOREEND);
+
+    routeDate.forEach((eventsDate, j) => {
+      const tripEventsListElement = container.querySelectorAll(`.trip-events__list`);
+      renderEvent(tripEventsListElement[tripEventsListElement.length - 1], routeDate[j]);
+    });
+
+    const tripSortDay = document.querySelector(`.trip-sort__item--day`);
+    if (SortType.DEFAULT !== sortType) {
+      tripSortDay.textContent = ``;
+      container.querySelector(`.day__info`).innerHTML = ``;
+    } else {
+      tripSortDay.textContent = `Day`;
+    }
+  });
+};
+
 export default class TripController {
   constructor(container) {
     this._noPointComponent = new NoPoint();
@@ -68,32 +87,41 @@ export default class TripController {
       datesEvents = Array.from(new Set([...datesEvents])).sort((a, b) => a - b);
       return datesEvents;
     };
+    const routeDateList = getRouteDateList();
 
     const getRouteDate = () => {
-      return getRouteDateList().
+      return routeDateList.
         map((it, i) => {
           return events.slice().filter((item) => Date.parse(new Date(item.startTime).toLocaleDateString(`en-US`)) === getRouteDateList()[i]);
         });
     };
+    const routeDates = getRouteDate();
+    renderEvents(tripDayElement, routeDates, SortType.DEFAULT);
 
-    getRouteDate().forEach((routeDate, i) => {
-      render(tripDayElement, new TripDay(getRouteDate()[i][0].startTime, i + 1), RenderPosition.BEFOREEND);
-      routeDate.forEach((eventsDate, j) => {
-        const tripEventsListElement = tripDayElement.querySelectorAll(`.trip-events__list`);
-        renderEvent(tripEventsListElement[tripEventsListElement.length - 1], routeDate[j]);
-      });
-    });
+    const getSortedEvents = (eventsList, sortType) => {
+      let sortedEvents = [];
+      const routeSortProcess = eventsList.slice();
 
-    this._tripSort.setSortTypeChangeHandler(() => {
+      switch (sortType) {
+        case SortType.TIME:
+          sortedEvents[0] = routeSortProcess.sort((a, b) => (b.endTime - b.startTime) - (a.endTime - a.startTime));
+          break;
+        case SortType.PRICE:
+          sortedEvents[0] = routeSortProcess.sort((a, b) => b.price - a.price);
+          break;
+        case SortType.DEFAULT:
+          sortedEvents = routeDates;
+          break;
+      }
+
+      return sortedEvents;
+    };
+
+    this._tripSort.setSortTypeChangeHandler((sortType) => {
       tripDayElement.innerHTML = ``;
 
-      getRouteDate().forEach((routeDate, i) => {
-        render(tripDayElement, new TripDay(getRouteDate()[i][0].startTime, i + 1), RenderPosition.BEFOREEND);
-        routeDate.forEach((eventsDate, j) => {
-          const tripEventsListElement = tripDayElement.querySelectorAll(`.trip-events__list`);
-          renderEvent(tripEventsListElement[tripEventsListElement.length - 1], routeDate[j]);
-        });
-      });
+      const sortedEvents = getSortedEvents(events, sortType);
+      renderEvents(tripDayElement, sortedEvents, sortType);
     });
   }
 }
