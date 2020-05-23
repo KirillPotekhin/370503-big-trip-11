@@ -29,17 +29,20 @@ const createEventOptionMarkup = (optionAll) => {
 };
 
 const createTripEventTemplate = (event) => {
-  const {type, city, startTime, endTime, price, optionAll} = event;
+  const {type, startTime, endTime, destination, price, offers} = event;
+  const city = destination.name;
+  const typeCapitalLetter = `${type.charAt(0).toUpperCase()}${type.slice(1)}`;
   const startTimeDate = new Date(startTime);
   const endTimeDate = new Date(endTime);
-  const eventOptionMarkup = createEventOptionMarkup(optionAll);
+  const eventOptionMarkup = createEventOptionMarkup(offers);
+  const pretext = (type === `Sightseeing`) || (type === `Restaurant`) || (type === `Check-in`) ? `in` : `to`;
   return (
     `<li class="trip-events__item">
       <div class="event">
         <div class="event__type">
-          <img class="event__type-icon" width="42" height="42" src="img/icons/${type.toLowerCase()}.png" alt="Event ${type.toLowerCase()} icon">
+          <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event ${type} icon">
         </div>
-        <h3 class="event__title">${type} ${(type === `Sightseeing`) || (type === `Restaurant`) || (type === `Check-in`) ? `in` : `to`} ${city}</h3>
+        <h3 class="event__title">${typeCapitalLetter} ${pretext} ${city}</h3>
 
         <div class="event__schedule">
           <p class="event__time">
@@ -54,7 +57,7 @@ const createTripEventTemplate = (event) => {
           &euro;&nbsp;<span class="event__price-value">${price}</span>
         </p>
 
-        ${optionAll.length ? `<h4 class="visually-hidden">Offers:</h4>
+        ${offers.length ? `<h4 class="visually-hidden">Offers:</h4>
           <ul class="event__selected-offers">
             ${eventOptionMarkup}
           </ul>` : ``}
