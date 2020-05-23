@@ -7,15 +7,15 @@ const createTripInfoTemplate = (events) => {
 
   let infoTitleContent;
   if (eventsSort.length === 1) {
-    infoTitleContent = startPoint.city;
+    infoTitleContent = startPoint.destination.name;
   } else if (eventsSort.length === 2) {
-    infoTitleContent = `${startPoint.city} \u2014 ${endPoint.city}`;
+    infoTitleContent = `${startPoint.destination.name} \u2014 ${endPoint.destination.name}`;
   } else if (eventsSort.length === 3) {
-    infoTitleContent = `${startPoint.city} \u2014 ${eventsSort[eventsSort.length - 2].city} \u2014 ${endPoint.city}`;
+    infoTitleContent = `${startPoint.destination.name} \u2014 ${eventsSort[eventsSort.length - 2].destination.name} \u2014 ${endPoint.destination.name}`;
   } else if (!eventsSort.length) {
     infoTitleContent = ``;
   } else {
-    infoTitleContent = `${startPoint.city} \u2014 ... \u2014 ${endPoint.city}`;
+    infoTitleContent = `${startPoint.destination.name} \u2014 ... \u2014 ${endPoint.destination.name}`;
   }
 
   const infoDatesStart = eventsSort.length ? (new Date(startPoint.startTime).toLocaleDateString(`en-US`, {month: `short`, day: `numeric`})) : ``;
