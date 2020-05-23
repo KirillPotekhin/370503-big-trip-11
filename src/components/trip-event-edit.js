@@ -181,7 +181,6 @@ export default class TripEventEdit extends AbstractSmartComponent {
   recoveryListeners() {
     this.setEventEditSubmitHandler(this._evenstEditSubmitHandler);
     this.setEventEditRollupButtonClickHandler(this._eventEditRollupButtonClickHandler);
-    // this.setFavoritesButtonClickHandler(this._favoritesButtonClickHandler);
     this._subscribeOnEvents();
   }
 
