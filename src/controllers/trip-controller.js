@@ -1,8 +1,6 @@
 import TripSort, {SortType} from "../components/trip-sort.js";
 import TripBoard from "../components/trip-board.js";
 import TripDay from "../components/trip-day.js";
-// import TripEvent from "../components/trip-event.js";
-// import TripEventEdit from "../components/trip-event-edit.js";
 import PointController from "./point-controller.js";
 import NoPoint from "../components/no-point.js";
 import {RenderPosition, render} from "../utils/render.js";
@@ -102,7 +100,7 @@ export default class TripController {
     const getRouteDate = () => {
       return routeDateList.
         map((it, i) => {
-          return this._events.slice().filter((item) => Date.parse(new Date(item.startTime).toLocaleDateString(`en-US`)) === getRouteDateList()[i]);
+          return this._events.filter((item) => Date.parse(new Date(item.startTime).toLocaleDateString(`en-US`)) === getRouteDateList()[i]);
         });
     };
     const routeDates = getRouteDate();

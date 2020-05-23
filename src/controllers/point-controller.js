@@ -28,10 +28,6 @@ export default class PointController {
 
     this._tripEvent.setEventRollupButtonClickHandler(() => {
       this._replaceEventToEdit();
-      // this._tripEventEdit.setEventTypeClickHandler((evt) => {
-      //   // this._tripEventEdit._activeEventType[evt.target.value] = evt.target.checked;
-      //   console.log(evt.target);
-      // });
       document.addEventListener(`keydown`, this._onEscKeyDown);
     });
 

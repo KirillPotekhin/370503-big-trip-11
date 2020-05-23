@@ -36,7 +36,7 @@ const mockStorage = {
 const destinations = [];
 for (let i = 0; i < mockStorage.cities.length; i++) {
   const destination = {
-    description: mockStorage.description.split(`. `, Math.floor(Math.random() * 6 + 1)),
+    description: mockStorage.description.split(`. `, Math.ceil(Math.random() * 6)),
     pictures: mockStorage.getPictures(i),
     name: mockStorage.cities.slice().splice(i, 1)[0],
   };
@@ -91,9 +91,9 @@ const generateEvent = () => {
     type: typeChoice,
     startTime: startTimeValue,
     endTime: startTimeValue + 24 * Math.floor(Math.random() * 100) * 60 * 1000,
-    destination: destinations[Math.floor(Math.random() * (destinations.length - 1) + 1)],
+    destination: destinations[Math.ceil(Math.random() * (destinations.length - 1))],
     price: Math.floor(Math.random() * 250),
-    offers: optionChoice[0].offers.slice(0, [Math.floor(Math.random() * (optionChoice[0].offers.length - 1) + 1)]),
+    offers: optionChoice[0].offers.slice(0, [Math.ceil(Math.random() * (optionChoice[0].offers.length - 1))]),
     isFavorite: Boolean(Math.round(Math.random())),
   };
 };

@@ -22,7 +22,7 @@ const getDateEvent = (date) => {
 };
 
 const createEventOptionMarkup = (optionList, optionAll, type) => {
-  return optionList.filter((it) => it.type === type)[0].offers
+  return optionList.find((it) => it.type === type).offers
     .map((option, index) => {
       const isOption = optionAll.find((item) => item.title === option.title && item.price === option.price);
       return (
@@ -182,10 +182,6 @@ export default class TripEventEdit extends AbstractSmartComponent {
     this.setEventEditSubmitHandler(this._evenstEditSubmitHandler);
     this.setEventEditRollupButtonClickHandler(this._eventEditRollupButtonClickHandler);
     this._subscribeOnEvents();
-  }
-
-  rerender() {
-    super.rerender();
   }
 
   reset() {
