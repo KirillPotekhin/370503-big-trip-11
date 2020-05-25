@@ -1,4 +1,5 @@
 import AbstractComponent from "./abstract-component.js";
+import Moment from "moment";
 
 const createTripInfoTemplate = (events) => {
   const eventsSort = events.slice().sort((a, b) => a.startTime - b.startTime);
@@ -18,10 +19,12 @@ const createTripInfoTemplate = (events) => {
     infoTitleContent = `${startPoint.destination.name} \u2014 ... \u2014 ${endPoint.destination.name}`;
   }
 
-  const infoDatesStart = eventsSort.length ? (new Date(startPoint.startTime).toLocaleDateString(`en-US`, {month: `short`, day: `numeric`})) : ``;
+  const dateStart = new Moment(startPoint.startTime);
+  const dateEnd = new Moment(endPoint.endTime);
+  const infoDatesStart = eventsSort.length ? (dateStart.format(`MMM D`)) : ``;
 
-  const formatDatesEnd = eventsSort.length && new Date(startPoint.startTime).getMonth() === new Date(endPoint.endTime).getMonth() ? {day: `numeric`} : {month: `short`, day: `numeric`};
-  const infoDatesEnd = eventsSort.length ? new Date(endPoint.endTime).toLocaleDateString(`en-US`, formatDatesEnd) : ``;
+  const formatDatesEnd = eventsSort.length && new Moment(dateStart).isSame(dateEnd, `month`) ? `D` : `MMM D`;
+  const infoDatesEnd = eventsSort.length ? dateEnd.format(formatDatesEnd) : ``;
 
   const infoDates = eventsSort.length ? `${infoDatesStart} \u2014 ${infoDatesEnd}` : ``;
 

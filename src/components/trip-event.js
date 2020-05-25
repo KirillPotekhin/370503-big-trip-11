@@ -1,20 +1,15 @@
-import {DAY, HOUR, MINUTE} from "../const.js";
 import {timeDisplay} from "../utils/common.js";
 import AbstractComponent from "./abstract-component.js";
+import Moment from "moment";
 
 const getDifferenceTime = (startTime, endTime) => {
-  const differenceTime = Math.floor(endTime - startTime);
-  const day = Math.floor(differenceTime / DAY);
-  const hour = (differenceTime < DAY) ? Math.floor(differenceTime / HOUR) : Math.floor(Math.floor(differenceTime % DAY) / HOUR);
-  let minute;
-  if (differenceTime < HOUR) {
-    minute = differenceTime / MINUTE;
-  } else if (differenceTime < DAY) {
-    minute = Math.floor(differenceTime % HOUR) / MINUTE;
-  } else {
-    minute = Math.floor(Math.floor(Math.floor(differenceTime % DAY) % HOUR) / MINUTE);
-  }
-  return `${day ? `${day}D ` : ``}${hour ? `${hour}H ` : ``}${minute ? `${minute}M` : ``}`;
+  const startTimeValue = new Moment(startTime);
+  const endTimeValue = new Moment(endTime);
+  const diferenceTime = Moment.duration(endTimeValue.diff(startTimeValue));
+  const day = diferenceTime.days() ? `${diferenceTime.days()}D` : ``;
+  const hour = diferenceTime.hours() ? `${diferenceTime.hours()}H` : ``;
+  const minute = diferenceTime.minutes() ? `${diferenceTime.minutes()}M` : ``;
+  return `${day} ${hour} ${minute}`;
 };
 
 const createEventOptionMarkup = (optionAll) => {

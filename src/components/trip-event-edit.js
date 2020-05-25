@@ -1,7 +1,9 @@
 import {TYPES} from "../const.js";
-import {timeDisplay} from "../utils/common.js";
 import AbstractSmartComponent from "./abstract-smart-component.js";
 import {destinations, offersList} from "../mock/event.js";
+import flatpickr from "flatpickr";
+import RangePlugin from "flatpickr/dist/plugins/rangePlugin";
+import "flatpickr/dist/flatpickr.min.css";
 
 const createEventTypeMarkup = (types) => {
   return types
@@ -15,10 +17,6 @@ const createEventTypeMarkup = (types) => {
       );
     })
     .join(`\n`);
-};
-
-const getDateEvent = (date) => {
-  return new Date(date).toLocaleDateString(`en-GB`, {day: `numeric`, month: `numeric`, year: `2-digit`});
 };
 
 const createEventOptionMarkup = (optionList, optionAll, type) => {
@@ -53,7 +51,7 @@ const createDestinationItemMarkup = (cities) => {
 };
 
 const createTripEventEditTemplate = (event) => {
-  const {type, startTime, endTime, destination, price, offers, isFavorite} = event;
+  const {type, destination, price, offers, isFavorite} = event;
   const description = destination.description;
   const city = destination.name;
   const photos = destination.pictures;
@@ -103,12 +101,12 @@ const createTripEventEditTemplate = (event) => {
             <label class="visually-hidden" for="event-start-time-1">
               From
             </label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${getDateEvent(startTime)} ${timeDisplay(startTime)}">
+            <input class="event__input event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="">
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">
               To
             </label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${getDateEvent(endTime)} ${timeDisplay(endTime)}">
+            <input class="event__input event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="">
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -167,10 +165,11 @@ export default class TripEventEdit extends AbstractSmartComponent {
     this._eventEditSubmitHandler = null;
     this._eventEditRollupButtonClickHandler = null;
     this._favoritesButtonClickHandler = null;
+    this._flatpickr = null;
 
     this._activeEventType = {type: this._event.type};
     this._eventDestinationValue = {};
-
+    this._applyFlatpickr();
     this._subscribeOnEvents();
   }
 
@@ -182,6 +181,12 @@ export default class TripEventEdit extends AbstractSmartComponent {
     this.setEventEditSubmitHandler(this._evenstEditSubmitHandler);
     this.setEventEditRollupButtonClickHandler(this._eventEditRollupButtonClickHandler);
     this._subscribeOnEvents();
+  }
+
+  rerender() {
+    super.rerender();
+
+    this._applyFlatpickr();
   }
 
   reset() {
@@ -207,6 +212,22 @@ export default class TripEventEdit extends AbstractSmartComponent {
     this.getElement().querySelector(`.event__favorite-checkbox`).addEventListener(`click`, handler);
     this._favoritesButtonClickHandler = handler;
     this.rerender();
+  }
+
+  _applyFlatpickr() {
+    if (this._flatpickr) {
+      this._flatpickr.destroy();
+      this._flatpickr = null;
+    }
+
+    const [eventStartTime, eventEndTime] = this.getElement().querySelectorAll(`.event__input--time`);
+    this._flatpickr = flatpickr(eventStartTime, {
+      altInput: true,
+      allowInput: true,
+      altFormat: `d/m/y H:i`,
+      defaultDate: [this._event.startTime || `today`, this._event.endTime || `today`],
+      plugins: [new RangePlugin({input: eventEndTime})],
+    });
   }
 
   _subscribeOnEvents() {
