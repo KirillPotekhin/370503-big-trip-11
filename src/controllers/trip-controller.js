@@ -62,10 +62,10 @@ const getSortedEvents = (eventsList, sortType) => {
 };
 
 export default class TripController {
-  constructor(container) {
+  constructor(container, pointsModel) {
     this._container = container;
+    this._pointsModel = pointsModel;
 
-    this._events = [];
     this._showedEventControllers = [];
     this._noPointComponent = new NoPoint();
     this._tripSort = new TripSort();
@@ -76,10 +76,10 @@ export default class TripController {
     this._onViewChange = this._onViewChange.bind(this);
   }
 
-  render(events) {
-    this._events = events;
+  render() {
+    const events = this._pointsModel.getEvents();
 
-    if (!this._events.length) {
+    if (!events.length) {
       render(this._container, this._noPointComponent, RenderPosition.BEFOREEND);
       return;
     }
@@ -87,9 +87,13 @@ export default class TripController {
     render(this._container, this._tripSort, RenderPosition.BEFOREEND);
     render(this._container, this._tripBoard, RenderPosition.BEFOREEND);
 
+    this._renderEvents(events);
+  }
+
+  _renderEvents(events) {
     const tripDayElement = this._container.querySelector(`.trip-days`);
     const getRouteDateList = () => {
-      let datesEvents = this._events.map((event) => {
+      let datesEvents = events.map((event) => {
         return (Date.parse(new Date(event.startTime).toLocaleDateString(`en-US`)));
       });
       datesEvents = Array.from(new Set([...datesEvents])).sort((a, b) => a - b);
@@ -100,7 +104,7 @@ export default class TripController {
     const getRouteDate = () => {
       return routeDateList.
         map((it, i) => {
-          return this._events.filter((item) => Date.parse(new Date(item.startTime).toLocaleDateString(`en-US`)) === getRouteDateList()[i]);
+          return events.filter((item) => Date.parse(new Date(item.startTime).toLocaleDateString(`en-US`)) === getRouteDateList()[i]);
         });
     };
     const routeDates = getRouteDate();
@@ -108,14 +112,11 @@ export default class TripController {
   }
 
   _onDataChange(pointController, oldData, newData) {
-    const index = this._events.findIndex((it) => it === oldData);
-    if (index === -1) {
-      return;
+    const isSuccess = this._pointsModel.updateTask(oldData.id, newData);
+
+    if (isSuccess) {
+      pointController.render(newData);
     }
-
-    this._events = [].concat(this._events.slice(0, index), newData, this._events.slice(index + 1));
-
-    pointController.render(this._events[index]);
   }
 
   _onViewChange() {
@@ -128,7 +129,7 @@ export default class TripController {
     const tripDayElement = this._container.querySelector(`.trip-days`);
     tripDayElement.innerHTML = ``;
 
-    const sortedEvents = getSortedEvents(this._events, sortType);
+    const sortedEvents = getSortedEvents(this._pointsModel.getEvents(), sortType);
     this._showedEventControllers = renderEvents(tripDayElement, sortedEvents, sortType, this._onDataChange, this._onViewChange);
   }
 }
