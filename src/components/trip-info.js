@@ -19,10 +19,12 @@ const createTripInfoTemplate = (events) => {
     infoTitleContent = `${startPoint.destination.name} \u2014 ... \u2014 ${endPoint.destination.name}`;
   }
 
-  const infoDatesStart = eventsSort.length ? (new Moment(startPoint.startTime).format(`MMM D`)) : ``;
+  const dateStart = new Moment(startPoint.startTime);
+  const dateEnd = new Moment(endPoint.endTime);
+  const infoDatesStart = eventsSort.length ? (dateStart.format(`MMM D`)) : ``;
 
-  const formatDatesEnd = eventsSort.length && new Moment(startPoint.startTime).format(`MMM`) === new Moment(endPoint.endTime).format(`MMM`) ? `D` : `MMM D`;
-  const infoDatesEnd = eventsSort.length ? new Moment(endPoint.endTime).format(formatDatesEnd) : ``;
+  const formatDatesEnd = eventsSort.length && new Moment(dateStart).isSame(dateEnd, `month`) ? `D` : `MMM D`;
+  const infoDatesEnd = eventsSort.length ? dateEnd.format(formatDatesEnd) : ``;
 
   const infoDates = eventsSort.length ? `${infoDatesStart} \u2014 ${infoDatesEnd}` : ``;
 
