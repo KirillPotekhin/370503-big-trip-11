@@ -1,6 +1,6 @@
 import TripEvent from "../components/trip-event.js";
 import TripEventEdit from "../components/trip-event-edit.js";
-import {RenderPosition, render, replace} from "../utils/render.js";
+import {RenderPosition, render, remove, replace} from "../utils/render.js";
 
 const Mode = {
   DEFAULT: `default`,
@@ -49,8 +49,8 @@ export default class PointController {
     });
 
     if (oldEventEditComponent && oldEventComponent) {
-      replace(this._taskComponent, oldEventComponent);
-      replace(this._taskEditComponent, oldEventEditComponent);
+      replace(this._tripEvent, oldEventComponent);
+      replace(this._tripEventEdit, oldEventEditComponent);
     } else {
       render(this._container, this._tripEvent, RenderPosition.BEFOREEND);
     }
@@ -66,6 +66,12 @@ export default class PointController {
     this._onViewChange();
     replace(this._tripEventEdit, this._tripEvent);
     this._mode = Mode.EDIT;
+  }
+
+  destroy() {
+    remove(this._tripEventEdit);
+    remove(this._tripEvent);
+    document.removeEventListener(`keydown`, this._onEscKeyDown);
   }
 
   _replaceEditToEvent() {

@@ -52,8 +52,7 @@ export default class TripSort extends AbstractComponent {
   }
 
   getSortType() {
-
-    return this._currenSortType;
+    return this._currentSortType;
   }
 
   setSortTypeChangeHandler(handler) {
@@ -70,8 +69,13 @@ export default class TripSort extends AbstractComponent {
 
       this._currenSortType = sortType;
 
-
       handler(this._currenSortType);
+    });
+  }
+  reserSortChecked() {
+    const tripSortInputs = this.getElement().querySelectorAll(`.trip-sort__input`);
+    tripSortInputs.forEach((it, i) => {
+      it.checked = i ? false : true;
     });
   }
 }

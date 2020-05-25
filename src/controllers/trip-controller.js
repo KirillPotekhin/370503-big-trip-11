@@ -74,6 +74,8 @@ export default class TripController {
     this._tripSort.setSortTypeChangeHandler(this._onSortTypeChange);
     this._onDataChange = this._onDataChange.bind(this);
     this._onViewChange = this._onViewChange.bind(this);
+    this._onFilterChange = this._onFilterChange.bind(this);
+    this._pointsModel.setFilterChangeHandler(this._onFilterChange);
   }
 
   render() {
@@ -88,6 +90,17 @@ export default class TripController {
     render(this._container, this._tripBoard, RenderPosition.BEFOREEND);
 
     this._renderEvents(events);
+  }
+
+  _removeEvents() {
+    this._showedEventControllers.forEach((showedEventControllers) => {
+      showedEventControllers.forEach((pointController) => pointController.destroy());
+    });
+
+    // this._showedEventControllers.forEach((pointController) => pointController.destroy());
+    this._showedEventControllers = [];
+    const tripDayElement = this._container.querySelector(`.trip-days`);
+    tripDayElement.innerHTML = ``;
   }
 
   _renderEvents(events) {
@@ -111,6 +124,11 @@ export default class TripController {
     this._showedEventControllers = renderEvents(tripDayElement, routeDates, SortType.DEFAULT, this._onDataChange, this._onViewChange);
   }
 
+  _updateEvents() {
+    this._removeEvents();
+    this._renderEvents(this._pointsModel.getEvents());
+  }
+
   _onDataChange(pointController, oldData, newData) {
     const isSuccess = this._pointsModel.updateTask(oldData.id, newData);
 
@@ -131,5 +149,11 @@ export default class TripController {
 
     const sortedEvents = getSortedEvents(this._pointsModel.getEvents(), sortType);
     this._showedEventControllers = renderEvents(tripDayElement, sortedEvents, sortType, this._onDataChange, this._onViewChange);
+  }
+
+  _onFilterChange() {
+    this._onSortTypeChange(SortType.DEFAULT);
+    this._tripSort.reserSortChecked();
+    this._updateEvents();
   }
 }
