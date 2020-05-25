@@ -1,5 +1,4 @@
 import {TYPES} from "../const.js";
-import {timeDisplay} from "../utils/common.js";
 import AbstractSmartComponent from "./abstract-smart-component.js";
 import {destinations, offersList} from "../mock/event.js";
 import flatpickr from "flatpickr";
@@ -18,10 +17,6 @@ const createEventTypeMarkup = (types) => {
       );
     })
     .join(`\n`);
-};
-
-const getDateEvent = (date) => {
-  return new Date(date).toLocaleDateString(`en-GB`, {day: `numeric`, month: `numeric`, year: `2-digit`});
 };
 
 const createEventOptionMarkup = (optionList, optionAll, type) => {
@@ -56,7 +51,7 @@ const createDestinationItemMarkup = (cities) => {
 };
 
 const createTripEventEditTemplate = (event) => {
-  const {type, startTime, endTime, destination, price, offers, isFavorite} = event;
+  const {type, destination, price, offers, isFavorite} = event;
   const description = destination.description;
   const city = destination.name;
   const photos = destination.pictures;
@@ -106,12 +101,12 @@ const createTripEventEditTemplate = (event) => {
             <label class="visually-hidden" for="event-start-time-1">
               From
             </label>
-            <input class="event__input event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${getDateEvent(startTime)} ${timeDisplay(startTime)}">
+            <input class="event__input event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="">
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">
               To
             </label>
-            <input class="event__input event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${getDateEvent(endTime)} ${timeDisplay(endTime)}">
+            <input class="event__input event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="">
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -224,9 +219,8 @@ export default class TripEventEdit extends AbstractSmartComponent {
       this._flatpickr.destroy();
       this._flatpickr = null;
     }
-    const eventTime = this.getElement().querySelectorAll(`.event__input--time`);
-    const eventStartTime = eventTime[0];
-    const eventEndTime = eventTime[1];
+
+    const [eventStartTime, eventEndTime] = this.getElement().querySelectorAll(`.event__input--time`);
     this._flatpickr = flatpickr(eventStartTime, {
       altInput: true,
       allowInput: true,
