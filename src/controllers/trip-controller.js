@@ -1,7 +1,7 @@
 import TripSort, {SortType} from "../components/trip-sort.js";
 import TripBoard from "../components/trip-board.js";
 import TripDay from "../components/trip-day.js";
-import PointController from "./point-controller.js";
+import PointController, {Mode as PointControllerMode, EmptyEvent} from "./point-controller.js";
 import NoPoint from "../components/no-point.js";
 import {RenderPosition, render} from "../utils/render.js";
 
@@ -19,7 +19,8 @@ const renderEvents = (container, routePointDates, sortType, onDataChange, onView
     return routeDate.map((eventsDate) => {
       const tripEventsListElement = container.querySelectorAll(`.trip-events__list`);
       const pointController = new PointController(tripEventsListElement[tripEventsListElement.length - 1], onDataChange, onViewChange);
-      pointController.render(eventsDate);
+      pointController.render(eventsDate, PointControllerMode.DEFAULT);
+      // console.log(pointController);
       return pointController;
     });
   });
@@ -76,6 +77,7 @@ export default class TripController {
     this._onViewChange = this._onViewChange.bind(this);
     this._onFilterChange = this._onFilterChange.bind(this);
     this._pointsModel.setFilterChangeHandler(this._onFilterChange);
+    this._creatingEvent = null;
   }
 
   render() {
@@ -92,15 +94,25 @@ export default class TripController {
     this._renderEvents(events);
   }
 
+  createEvent() {
+    if (this._creatingEvent) {
+      return;
+    }
+
+    const tripEventsWrapper = document.querySelector(`.trip-events`);
+    this._creatingEvent = new PointController(tripEventsWrapper, this._onDataChange, this._onViewChange);
+    this._creatingEvent.render(EmptyEvent, PointControllerMode.ADDING);
+  }
+
   _removeEvents() {
     this._showedEventControllers.forEach((showedEventControllers) => {
       showedEventControllers.forEach((pointController) => pointController.destroy());
     });
 
-    // this._showedEventControllers.forEach((pointController) => pointController.destroy());
     this._showedEventControllers = [];
     const tripDayElement = this._container.querySelector(`.trip-days`);
-    tripDayElement.innerHTML = ``;
+    const tripDaysItems = tripDayElement.querySelectorAll(`.trip-days__item`);
+    tripDaysItems.forEach((tripDayItem) => tripDayItem.remove());
   }
 
   _renderEvents(events) {
@@ -121,6 +133,7 @@ export default class TripController {
         });
     };
     const routeDates = getRouteDate();
+
     this._showedEventControllers = renderEvents(tripDayElement, routeDates, SortType.DEFAULT, this._onDataChange, this._onViewChange);
   }
 
@@ -129,11 +142,43 @@ export default class TripController {
     this._renderEvents(this._pointsModel.getEvents());
   }
 
-  _onDataChange(pointController, oldData, newData) {
-    const isSuccess = this._pointsModel.updateTask(oldData.id, newData);
+  _getInfoCost() {
+    const costValue = this._pointsModel.getEvents().length ? this._pointsModel.getEvents().reduce((acc, it) => acc + it.price, 0) : 0;
+    const tripInfo = document.querySelector(`.trip-info__cost-value`);
+    tripInfo.textContent = costValue;
+  }
 
-    if (isSuccess) {
-      pointController.render(newData);
+  _onDataChange(pointController, oldData, newData) {
+    if (oldData === EmptyEvent) {
+
+      this._creatingEvent = null;
+      if (newData === null) {
+        pointController.destroy();
+        this._updateEvents();
+        this._getInfoCost();
+        this._onSortTypeChange(this._tripSort.getSortType());
+      } else {
+        console.log(newData);
+        this._pointsModel.addEvent(newData);
+        pointController.render(newData, PointControllerMode.DEFAULT);
+
+        this._showedEventControllers = [].concat(pointController, this._showedEventControllers);
+        this._getInfoCost();
+        this._onSortTypeChange(this._tripSort.getSortType());
+      }
+    } else if (newData === null) {
+      this._pointsModel.removeEvent(oldData.id);
+      this._updateEvents();
+      this._getInfoCost();
+      this._onSortTypeChange(this._tripSort.getSortType());
+    } else {
+      const isSuccess = this._pointsModel.updateEvent(oldData.id, newData);
+
+      if (isSuccess) {
+        pointController.render(newData);
+        this._getInfoCost();
+        this._onSortTypeChange(this._tripSort.getSortType());
+      }
     }
   }
 
@@ -145,7 +190,7 @@ export default class TripController {
 
   _onSortTypeChange(sortType) {
     const tripDayElement = this._container.querySelector(`.trip-days`);
-    tripDayElement.innerHTML = ``;
+    this._removeEvents();
 
     const sortedEvents = getSortedEvents(this._pointsModel.getEvents(), sortType);
     this._showedEventControllers = renderEvents(tripDayElement, sortedEvents, sortType, this._onDataChange, this._onViewChange);

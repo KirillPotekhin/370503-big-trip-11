@@ -16,7 +16,7 @@ const createEventOptionMarkup = (optionAll) => {
   return optionAll.slice(0, 3)
   .map((option) => {
     return `<li class="event__offer">
-      <span class="event__offer-title">${option.titile}</span>
+      <span class="event__offer-title">${option.title}</span>
       &plus;
       &euro;&nbsp;<span class="event__offer-price">${option.price}</span>
     </li>`;

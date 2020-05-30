@@ -53,7 +53,7 @@ const createOffers = (arr) => {
     for (let i = 0; i < Math.floor(Math.random() * 6); i++) {
       option.offers.push(
           {
-            titile: [
+            title: [
               `Add luggage`,
               `Switch to comfort class`,
               `Add meal`,
