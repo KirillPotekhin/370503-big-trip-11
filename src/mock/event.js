@@ -53,7 +53,7 @@ const createOffers = (arr) => {
     for (let i = 0; i < Math.floor(Math.random() * 6); i++) {
       option.offers.push(
           {
-            titile: [
+            title: [
               `Add luggage`,
               `Switch to comfort class`,
               `Add meal`,
@@ -90,6 +90,7 @@ const generateEvent = () => {
   return {
     type: typeChoice,
     startTime: startTimeValue,
+    id: String(new Date() + Math.random()),
     endTime: startTimeValue + 24 * Math.floor(Math.random() * 100) * 60 * 1000,
     destination: destinations[Math.ceil(Math.random() * (destinations.length - 1))],
     price: Math.floor(Math.random() * 250),

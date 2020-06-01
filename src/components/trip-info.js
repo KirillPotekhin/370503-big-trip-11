@@ -19,8 +19,8 @@ const createTripInfoTemplate = (events) => {
     infoTitleContent = `${startPoint.destination.name} \u2014 ... \u2014 ${endPoint.destination.name}`;
   }
 
-  const dateStart = new Moment(startPoint.startTime);
-  const dateEnd = new Moment(endPoint.endTime);
+  const dateStart = eventsSort.length ? new Moment(startPoint.startTime) : ``;
+  const dateEnd = eventsSort.length ? new Moment(endPoint.endTime) : ``;
   const infoDatesStart = eventsSort.length ? (dateStart.format(`MMM D`)) : ``;
 
   const formatDatesEnd = eventsSort.length && new Moment(dateStart).isSame(dateEnd, `month`) ? `D` : `MMM D`;
@@ -28,7 +28,16 @@ const createTripInfoTemplate = (events) => {
 
   const infoDates = eventsSort.length ? `${infoDatesStart} \u2014 ${infoDatesEnd}` : ``;
 
-  const infoCost = eventsSort.length ? eventsSort.reduce((acc, it) => acc + it.price, 0) : 0;
+  const tripCost = events.reduce((acc, it) => acc + it.price, 0);
+  const offersCost = events.reduce((acc, it) => {
+    it.offers.forEach((offer) => {
+      acc = acc + offer.price;
+      return acc;
+    });
+    return acc;
+  }, 0);
+  const totalCost = tripCost + offersCost;
+  const infoCost = events.length ? totalCost : 0;
 
   return (
     `<section class="trip-main__trip-info  trip-info">

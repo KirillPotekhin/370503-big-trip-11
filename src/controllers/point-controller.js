@@ -1,10 +1,23 @@
 import TripEvent from "../components/trip-event.js";
+// import TripEventItem from "../components/trip-event-item";
 import TripEventEdit from "../components/trip-event-edit.js";
-import {RenderPosition, render, replace} from "../utils/render.js";
+import {RenderPosition, render, remove, replace} from "../utils/render.js";
+import {TYPES} from "../const.js";
 
-const Mode = {
+export const Mode = {
+  ADDING: `adding`,
   DEFAULT: `default`,
   EDIT: `edit`,
+};
+
+export const EmptyEvent = {
+  type: TYPES[0],
+  destination: {
+    name: ``,
+  },
+  offers: [],
+  price: ``,
+  isFavorite: false,
 };
 
 export default class PointController {
@@ -19,12 +32,14 @@ export default class PointController {
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
   }
 
-  render(event) {
+  render(event, mode) {
     const oldEventComponent = this._tripEvent;
     const oldEventEditComponent = this._tripEventEdit;
+    this._mode = mode;
+    const tripEventAddButton = document.querySelector(`.trip-main__event-add-btn`);
 
     this._tripEvent = new TripEvent(event);
-    this._tripEventEdit = new TripEventEdit(event);
+    this._tripEventEdit = new TripEventEdit(event, this._mode);
 
     this._tripEvent.setEventRollupButtonClickHandler(() => {
       this._replaceEventToEdit();
@@ -33,8 +48,13 @@ export default class PointController {
 
     this._tripEventEdit.setEventEditSubmitHandler((evt) => {
       evt.preventDefault();
-      this._replaceEditToEvent();
+      const data = this._tripEventEdit.getData();
+      this._onDataChange(this, event, data);
       document.removeEventListener(`keydown`, this._onEscKeyDown);
+    });
+
+    this._tripEventEdit.setDeleteButtonClickHandler(() => {
+      this._onDataChange(this, event, null);
     });
 
     this._tripEventEdit.setEventEditRollupButtonClickHandler(() => {
@@ -48,11 +68,39 @@ export default class PointController {
       }));
     });
 
-    if (oldEventEditComponent && oldEventComponent) {
-      replace(this._taskComponent, oldEventComponent);
-      replace(this._taskEditComponent, oldEventEditComponent);
-    } else {
-      render(this._container, this._tripEvent, RenderPosition.BEFOREEND);
+    switch (mode) {
+      case Mode.DEFAULT:
+        if (oldEventEditComponent && oldEventComponent) {
+          replace(this._tripEvent, oldEventComponent);
+          replace(this._tripEventEdit, oldEventEditComponent);
+          this._replaceEditToEvent();
+        } else {
+          render(this._container, this._tripEvent, RenderPosition.BEFOREEND);
+        }
+
+        tripEventAddButton.disabled = false;
+        break;
+      case Mode.ADDING:
+        if (oldEventEditComponent && oldEventComponent) {
+          remove(oldEventComponent);
+          remove(oldEventEditComponent);
+        }
+        document.addEventListener(`keydown`, this._onEscKeyDown);
+        tripEventAddButton.disabled = true;
+        const tripEventMsg = document.querySelector(`.trip-events__msg`);
+        if (tripEventMsg) {
+          tripEventMsg.remove();
+        }
+        const tripEventsElement = document.querySelector(`.trip-events`);
+        const tripSortElement = tripEventsElement.querySelector(`.trip-events__trip-sort`);
+        if (tripSortElement) {
+          render(tripSortElement, this._tripEventEdit, RenderPosition.AFTEREND);
+          this._tripEventEdit.getPointControllerMode(Mode.ADDING);
+          break;
+        }
+        render(tripEventsElement, this._tripEventEdit, RenderPosition.BEFOREEND);
+        this._tripEventEdit.getPointControllerMode(Mode.ADDING);
+        break;
     }
   }
 
@@ -68,16 +116,27 @@ export default class PointController {
     this._mode = Mode.EDIT;
   }
 
+  destroy() {
+    remove(this._tripEventEdit);
+    remove(this._tripEvent);
+    document.removeEventListener(`keydown`, this._onEscKeyDown);
+  }
+
   _replaceEditToEvent() {
     document.removeEventListener(`keydown`, this._onEscKeyDown);
     this._tripEventEdit.reset();
-    replace(this._tripEvent, this._tripEventEdit);
+    if (document.contains(this._tripEventEdit.getElement())) {
+      replace(this._tripEvent, this._tripEventEdit);
+    }
     this._mode = Mode.DEFAULT;
   }
 
   _onEscKeyDown(evt) {
     const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
     if (isEscKey) {
+      if (this._mode === Mode.ADDING) {
+        this._onDataChange(this, EmptyEvent, null);
+      }
       this._replaceEditToEvent();
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     }

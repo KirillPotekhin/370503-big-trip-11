@@ -16,7 +16,7 @@ const createEventOptionMarkup = (optionAll) => {
   return optionAll.slice(0, 3)
   .map((option) => {
     return `<li class="event__offer">
-      <span class="event__offer-title">${option.titile}</span>
+      <span class="event__offer-title">${option.title}</span>
       &plus;
       &euro;&nbsp;<span class="event__offer-price">${option.price}</span>
     </li>`;
@@ -32,8 +32,7 @@ const createTripEventTemplate = (event) => {
   const eventOptionMarkup = createEventOptionMarkup(offers);
   const pretext = (type === `Sightseeing`) || (type === `Restaurant`) || (type === `Check-in`) ? `in` : `to`;
   return (
-    `<li class="trip-events__item">
-      <div class="event">
+    `<div class="event">
         <div class="event__type">
           <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event ${type} icon">
         </div>
@@ -60,8 +59,7 @@ const createTripEventTemplate = (event) => {
         <button class="event__rollup-btn" type="button">
           <span class="visually-hidden">Open event</span>
         </button>
-      </div>
-    </li>`
+      </div>`
   );
 };
 

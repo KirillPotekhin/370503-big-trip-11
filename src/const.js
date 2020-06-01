@@ -11,4 +11,10 @@ const TYPES = [
   `restaurant`
 ];
 
-export {TYPES};
+const FilterTypes = {
+  EVERYTHING: `everything`,
+  FUTURE: `future`,
+  PAST: `past`,
+};
+
+export {TYPES, FilterTypes};
