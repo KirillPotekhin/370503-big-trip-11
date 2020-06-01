@@ -340,7 +340,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
       .addEventListener(`keydown`, (evt) => {
         const theEvent = evt || window.event;
         let key = theEvent.key;
-        const regex = /[0-9]|\./;
+        const regex = /[0-9]|Backspace/;
         if (!regex.test(key)) {
           theEvent.returnValue = false;
           if (theEvent.preventDefault) {
