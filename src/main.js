@@ -9,7 +9,7 @@ import PointsModel from "./models/points.js";
 import {RenderPosition, render} from "./utils/render.js";
 import {FilterTypes} from "./const.js";
 
-const EVENT_COUNT = 2;
+const EVENT_COUNT = 20;
 
 const events = generateEvents(EVENT_COUNT);
 const pointsModel = new PointsModel();
@@ -29,10 +29,13 @@ filterController.render();
 const tripEventElement = document.querySelector(`.trip-events`);
 const tripController = new TripController(tripEventElement, pointsModel);
 tripController.render(events);
-// tripController.setActiveItem(TabItem.EVENTS);
 
 const newEvent = tripMainElement.querySelector(`.trip-main__event-add-btn`);
 newEvent.addEventListener(`click`, () => {
+  tripTab.setActiveItem(TabItem.EVENTS);
+  statistics.hide();
+  tripController.show();
+  tripController.onSortTypeReset();
   filterController.onFilterChange(FilterTypes.EVERYTHING);
   filterController.render();
   tripController.createEvent();
@@ -40,7 +43,9 @@ newEvent.addEventListener(`click`, () => {
 
 const pageMain = document.querySelector(`.page-main`);
 const pageBodyContainer = pageMain.querySelector(`.page-body__container`);
-const statistics = new Statistics();
+
+const statistics = new Statistics(pointsModel);
+
 render(pageBodyContainer, statistics, RenderPosition.BEFOREEND);
 statistics.hide();
 
