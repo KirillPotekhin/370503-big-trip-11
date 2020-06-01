@@ -1,4 +1,5 @@
 import TripEvent from "../components/trip-event.js";
+// import TripEventItem from "../components/trip-event-item";
 import TripEventEdit from "../components/trip-event-edit.js";
 import {RenderPosition, render, remove, replace} from "../utils/render.js";
 import {TYPES} from "../const.js";
@@ -35,20 +36,19 @@ export default class PointController {
     const oldEventComponent = this._tripEvent;
     const oldEventEditComponent = this._tripEventEdit;
     this._mode = mode;
+    const tripEventAddButton = document.querySelector(`.trip-main__event-add-btn`);
 
     this._tripEvent = new TripEvent(event);
-    this._tripEventEdit = new TripEventEdit(event);
+    this._tripEventEdit = new TripEventEdit(event, this._mode);
 
     this._tripEvent.setEventRollupButtonClickHandler(() => {
       this._replaceEventToEdit();
-      // console.log(event);
       document.addEventListener(`keydown`, this._onEscKeyDown);
     });
 
     this._tripEventEdit.setEventEditSubmitHandler((evt) => {
       evt.preventDefault();
       const data = this._tripEventEdit.getData();
-      console.log(data);
       this._onDataChange(this, event, data);
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     });
@@ -77,6 +77,8 @@ export default class PointController {
         } else {
           render(this._container, this._tripEvent, RenderPosition.BEFOREEND);
         }
+
+        tripEventAddButton.disabled = false;
         break;
       case Mode.ADDING:
         if (oldEventEditComponent && oldEventComponent) {
@@ -84,14 +86,20 @@ export default class PointController {
           remove(oldEventEditComponent);
         }
         document.addEventListener(`keydown`, this._onEscKeyDown);
-
+        tripEventAddButton.disabled = true;
+        const tripEventMsg = document.querySelector(`.trip-events__msg`);
+        if (tripEventMsg) {
+          tripEventMsg.remove();
+        }
         const tripEventsElement = document.querySelector(`.trip-events`);
         const tripSortElement = tripEventsElement.querySelector(`.trip-events__trip-sort`);
         if (tripSortElement) {
           render(tripSortElement, this._tripEventEdit, RenderPosition.AFTEREND);
+          this._tripEventEdit.getPointControllerMode(Mode.ADDING);
           break;
         }
         render(tripEventsElement, this._tripEventEdit, RenderPosition.BEFOREEND);
+        this._tripEventEdit.getPointControllerMode(Mode.ADDING);
         break;
     }
   }

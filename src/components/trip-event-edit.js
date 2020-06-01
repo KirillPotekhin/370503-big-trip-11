@@ -4,6 +4,7 @@ import {destinations, offersList} from "../mock/event.js";
 import flatpickr from "flatpickr";
 import RangePlugin from "flatpickr/dist/plugins/rangePlugin";
 import "flatpickr/dist/flatpickr.min.css";
+import {Mode as PointControllerMode} from "../controllers/point-controller.js";
 
 const createEventTypeMarkup = (types, activeType) => {
   return types
@@ -51,7 +52,7 @@ const createDestinationItemMarkup = (cities) => {
     }).join(`\n`);
 };
 
-const createTripEventEditTemplate = (event) => {
+const createTripEventEditTemplate = (event, mode, offerFlag) => {
   const {type, destination, price, offers, isFavorite} = event;
   const city = destination.name;
   const description = city ? destinations.find((it) => it.name === city).description : ``;
@@ -62,12 +63,11 @@ const createTripEventEditTemplate = (event) => {
   const eventTypeTransferMarkup = createEventTypeMarkup(TYPES.slice(0, 7), type);
   const eventTypeActivityMarkup = createEventTypeMarkup(TYPES.slice(-3), type);
   const eventOptionMarkup = createEventOptionMarkup(offersList, offers, type);
-  
-  const offerList = offersList.filter((it) => it.type === type)[0].offers;
+  const isBlockSaveButton = !city || !price;
+  const offerList = mode === PointControllerMode.ADDING && !offerFlag ? [] : offersList.filter((it) => it.type === type)[0].offers;
   const pretext = (type === `Sightseeing`) || (type === `Restaurant`) || (type === `Check-in`) ? `in` : `to`;
   return (
-    `<li class="trip-events__item">
-      <form class="event  event--edit" action="#" method="post">
+    `<form class="event  event--edit trip-events__item" action="#" method="post">
         <header class="event__header">
           <div class="event__type-wrapper">
             <label class="event__type  event__type-btn" for="event-type-toggle-1">
@@ -119,18 +119,18 @@ const createTripEventEditTemplate = (event) => {
             <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">Delete</button>
+          <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton ? `disabled` : ``}>Save</button>
+          <button class="event__reset-btn" type="reset">${mode === PointControllerMode.ADDING ? `Cancel` : `Delete`}</button>
 
           <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
-          <label class="event__favorite-btn" for="event-favorite-1">
+          <label class="event__favorite-btn" for="event-favorite-1" ${mode === PointControllerMode.ADDING ? `style="display: none"` : ``}>
             <span class="visually-hidden">Add to favorite</span>
             <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
               <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
             </svg>
           </label>
 
-          <button class="event__rollup-btn" type="button">
+          <button ${mode === PointControllerMode.ADDING ? `style="display: none"` : ``}class="event__rollup-btn" type="button">
             <span class="visually-hidden">Open event</span>
           </button>
         </header>
@@ -155,8 +155,7 @@ const createTripEventEditTemplate = (event) => {
               </div>
           </section>` : ``}
         </section>
-      </form>
-    </li>`
+      </form>`
   );
 };
 
@@ -195,6 +194,9 @@ const parseFormData = (formData) => {
       name: formData.get(`event-destination`),
     };
   }
+  if (!eventInfo.price) {
+    eventInfo.price = ``;
+  }
   return eventInfo;
 };
 
@@ -202,6 +204,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
   constructor(event) {
     super();
     this._event = event;
+    this._mode = PointControllerMode.DEFAULT;
     this._eventEditSubmitHandler = null;
     this._eventEditRollupButtonClickHandler = null;
     this._favoritesButtonClickHandler = null;
@@ -212,10 +215,11 @@ export default class TripEventEdit extends AbstractSmartComponent {
     this._eventDestinationValue = {destination: this._event.destination};
     this._applyFlatpickr();
     this._subscribeOnEvents();
+    this._isOffer = null;
   }
 
   getTemplate() {
-    return createTripEventEditTemplate(this._eventInfo);
+    return createTripEventEditTemplate(this._eventInfo, this._mode, this._isOffer);
   }
 
   removeElement() {
@@ -257,7 +261,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
   }
 
   setEventEditSubmitHandler(handler) {
-    this.getElement().querySelector(`.event--edit`).addEventListener(`submit`, handler);
+    this.getElement().addEventListener(`submit`, handler);
     this._eventEditSubmitHandler = handler;
   }
 
@@ -275,6 +279,11 @@ export default class TripEventEdit extends AbstractSmartComponent {
   setDeleteButtonClickHandler(handler) {
     this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, handler);
     this._deleteButtonClickHandler = handler;
+  }
+
+  getPointControllerMode(handler) {
+    this._mode = handler;
+    this.rerender();
   }
 
   _applyFlatpickr() {
@@ -307,22 +316,32 @@ export default class TripEventEdit extends AbstractSmartComponent {
       this._activeEventType.type = evt.target.value;
       this._activeEventType.offers = [];
       this._eventInfo = Object.assign({}, this._eventInfo, this.getData());
-
+      this._isOffer = true;
       this.rerender();
     });
 
     const eventDestination = element.querySelector(`.event__input--destination`);
     eventDestination.addEventListener(`change`, (evt) => {
       this._eventDestinationValue.name = evt.target.value;
-      const index = destinations.findIndex((item) => item.name === this._eventDestinationValue.name);
-      if (index !== -1) {
-        this._eventDestinationValue.name = destinations[index].name;
-        this._eventDestinationValue.description = destinations[index].description;
-        this._eventDestinationValue.pictures = destinations[index].pictures;
-        this._eventDestinationValue.destination = this._eventDestinationValue;
-      }
+      // const index = destinations.findIndex((item) => item.name === this._eventDestinationValue.name);
+      // if (index !== -1) {
+      //   this._eventDestinationValue.name = destinations[index].name;
+      //   this._eventDestinationValue.description = destinations[index].description;
+      //   this._eventDestinationValue.pictures = destinations[index].pictures;
+      //   this._eventDestinationValue.destination = this._eventDestinationValue;
+      // }
       this._eventInfo = Object.assign({}, this._eventInfo, this.getData());
+      const saveButton = this.getElement().querySelector(`.event__save-btn`);
+      saveButton.disabled = !this._eventInfo.price || !eventDestination.value;
       this.rerender();
     });
+
+    element.querySelector(`.event__input--price`)
+      .addEventListener(`input`, (evt) => {
+        this._currentPrice = evt.target.value;
+        this._eventInfo = Object.assign({}, this._eventInfo, this.getData());
+        const saveButton = this.getElement().querySelector(`.event__save-btn`);
+        saveButton.disabled = !this._currentPrice || !eventDestination.value;
+      });
   }
 }

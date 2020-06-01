@@ -6,6 +6,7 @@ import TripController from "./controllers/trip-controller.js";
 import FilterController from "./controllers/filter.js";
 import PointsModel from "./models/points.js";
 import {RenderPosition, render} from "./utils/render.js";
+import {FilterTypes} from "./const.js";
 
 const EVENT_COUNT = 2;
 
@@ -30,6 +31,7 @@ tripController.render(events);
 
 const newEvent = tripMainElement.querySelector(`.trip-main__event-add-btn`);
 newEvent.addEventListener(`click`, () => {
-  tripTab.setActiveItem(TabItem.EVENTS);
+  filterController.onFilterChange(FilterTypes.EVERYTHING);
+  filterController.render();
   tripController.createEvent();
 });
