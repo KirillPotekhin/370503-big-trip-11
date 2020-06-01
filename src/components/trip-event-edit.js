@@ -337,6 +337,19 @@ export default class TripEventEdit extends AbstractSmartComponent {
     });
 
     element.querySelector(`.event__input--price`)
+      .addEventListener(`keydown`, (evt) => {
+        const theEvent = evt || window.event;
+        let key = theEvent.key;
+        const regex = /[0-9]|\./;
+        if (!regex.test(key)) {
+          theEvent.returnValue = false;
+          if (theEvent.preventDefault) {
+            theEvent.preventDefault();
+          }
+        }
+      });
+
+    element.querySelector(`.event__input--price`)
       .addEventListener(`input`, (evt) => {
         this._currentPrice = evt.target.value;
         this._eventInfo = Object.assign({}, this._eventInfo, this.getData());
