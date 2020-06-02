@@ -1,6 +1,5 @@
 import {TYPES} from "../const.js";
 import AbstractSmartComponent from "./abstract-smart-component.js";
-import {destinations, offersList} from "../mock/event.js";
 import flatpickr from "flatpickr";
 import RangePlugin from "flatpickr/dist/plugins/rangePlugin";
 import "flatpickr/dist/flatpickr.min.css";
@@ -52,7 +51,7 @@ const createDestinationItemMarkup = (cities) => {
     }).join(`\n`);
 };
 
-const createTripEventEditTemplate = (event, mode, offerFlag) => {
+const createTripEventEditTemplate = (event, mode, offerFlag, destinations, offersList) => {
   const {type, destination, price, offers, isFavorite} = event;
   const city = destination.name;
   const description = city ? destinations.find((it) => it.name === city).description : ``;
@@ -159,56 +158,18 @@ const createTripEventEditTemplate = (event, mode, offerFlag) => {
   );
 };
 
-const parseFormData = (formData) => {
-  const eventEditForm = document.querySelector(`.event--edit`);
-  const types = eventEditForm.querySelectorAll(`.event__type-input`);
-  const activeType = Array.from(types).find((it) => it.checked).value;
-  const [startTimeString, endTimeString] = formData.get(`event-start-time`).split(` to `);
-  const startTimeValue = Date.parse(startTimeString);
-  const endTimeValue = Date.parse(endTimeString);
-  const offerList = eventEditForm.querySelectorAll(`.event__offer-selector`);
-  const checkedOffers = Array.from(offerList).filter((it) => {
-    return it.querySelector(`.event__offer-checkbox`).checked;
-  });
-
-  const offersActive = [];
-  checkedOffers.forEach((it) => {
-    offersActive.push({
-      title: it.querySelector(`.event__offer-title`).textContent,
-      price: parseInt(it.querySelector(`.event__offer-price`).textContent, 10),
-    });
-  });
-  const index = destinations.findIndex((item) => item.name === formData.get(`event-destination`));
-
-  const eventInfo = {
-    type: activeType,
-    startTime: startTimeValue,
-    endTime: endTimeValue,
-    offers: offersActive,
-    price: parseInt(formData.get(`event-price`), 10),
-    isFavorite: eventEditForm.querySelector(`.event__favorite-checkbox`).checked,
-  };
-
-  if (index !== -1) {
-    eventInfo.destination = {
-      name: formData.get(`event-destination`),
-    };
-  }
-  if (!eventInfo.price) {
-    eventInfo.price = ``;
-  }
-  return eventInfo;
-};
-
 export default class TripEventEdit extends AbstractSmartComponent {
-  constructor(event) {
+  constructor(event, mode, destinations, offers) {
     super();
     this._event = event;
-    this._mode = PointControllerMode.DEFAULT;
+    this._mode = mode;
+    this._destinations = destinations;
+    this._offers = offers;
     this._eventEditSubmitHandler = null;
     this._eventEditRollupButtonClickHandler = null;
     this._favoritesButtonClickHandler = null;
     this._flatpickr = null;
+    this._eventTimeValue = {};
     this._deleteButtonClickHandler = null;
     this._eventInfo = Object.assign({}, this._event);
     this._activeEventType = {type: this._event.type};
@@ -219,7 +180,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
   }
 
   getTemplate() {
-    return createTripEventEditTemplate(this._eventInfo, this._mode, this._isOffer);
+    return createTripEventEditTemplate(this._eventInfo, this._mode, this._isOffer, this._destinations, this._offers);
   }
 
   removeElement() {
@@ -255,9 +216,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
 
   getData() {
     const eventEditForm = document.querySelector(`.event--edit`);
-    const formData = new FormData(eventEditForm);
-
-    return parseFormData(formData);
+    return new FormData(eventEditForm);
   }
 
   setEventEditSubmitHandler(handler) {
@@ -292,7 +251,8 @@ export default class TripEventEdit extends AbstractSmartComponent {
       this._flatpickr = null;
     }
 
-    const [eventStartTime, eventEndTime] = this.getElement().querySelectorAll(`.event__input--time`);
+    const element = this.getElement();
+    const [eventStartTime, eventEndTime] = element.querySelectorAll(`.event__input--time`);
     const time = {
       timeFormat: `time_24hr`,
     };
@@ -306,6 +266,16 @@ export default class TripEventEdit extends AbstractSmartComponent {
     };
     flatpickrOption[time.timeFormat] = true;
     this._flatpickr = flatpickr(eventStartTime, flatpickrOption);
+
+    const datePicker = element.querySelector(`.flatpickr-input`);
+    datePicker.addEventListener(`change`, (evt) => {
+      const [startTimeString, endTimeString] = evt.target.value.split(` to `);
+      const startTimeValue = Date.parse(startTimeString);
+      const endTimeValue = Date.parse(endTimeString);
+      this._eventTimeValue.startTime = new Date(startTimeValue).toISOString();
+      this._eventTimeValue.endTime = new Date(endTimeValue).toISOString();
+      this._eventInfo = Object.assign({}, this._eventInfo, this._eventTimeValue);
+    });
   }
 
   _subscribeOnEvents() {
@@ -315,7 +285,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
     eventType.addEventListener(`change`, (evt) => {
       this._activeEventType.type = evt.target.value;
       this._activeEventType.offers = [];
-      this._eventInfo = Object.assign({}, this._eventInfo, this.getData());
+      this._eventInfo = Object.assign({}, this._eventInfo, this._activeEventType);
       this._isOffer = true;
       this.rerender();
     });
@@ -323,18 +293,43 @@ export default class TripEventEdit extends AbstractSmartComponent {
     const eventDestination = element.querySelector(`.event__input--destination`);
     eventDestination.addEventListener(`change`, (evt) => {
       this._eventDestinationValue.name = evt.target.value;
-      // const index = destinations.findIndex((item) => item.name === this._eventDestinationValue.name);
-      // if (index !== -1) {
-      //   this._eventDestinationValue.name = destinations[index].name;
-      //   this._eventDestinationValue.description = destinations[index].description;
-      //   this._eventDestinationValue.pictures = destinations[index].pictures;
-      //   this._eventDestinationValue.destination = this._eventDestinationValue;
-      // }
-      this._eventInfo = Object.assign({}, this._eventInfo, this.getData());
+      const index = this._destinations.findIndex((item) => item.name === this._eventDestinationValue.name);
+      if (index !== -1) {
+        this._eventDestinationValue.name = this._destinations[index].name;
+        this._eventDestinationValue.description = this._destinations[index].description;
+        this._eventDestinationValue.pictures = this._destinations[index].pictures;
+        this._eventDestinationValue.destination = this._eventDestinationValue;
+      } else {
+        this._eventDestinationValue.name = this._eventInfo.name;
+      }
+      this._eventInfo = Object.assign({}, this._eventInfo, this._eventDestinationValue);
       const saveButton = this.getElement().querySelector(`.event__save-btn`);
       saveButton.disabled = !this._eventInfo.price || !eventDestination.value;
       this.rerender();
+
     });
+
+    // const datePicker = element.querySelector(`.flatpickr-input`);
+    // datePicker.addEventListener(`input`, (evt) => {
+    //   const [startTimeString, endTimeString] = evt.target.value.split(` to `);
+    //   const startTimeValue = Date.parse(startTimeString);
+    //   const endTimeValue = Date.parse(endTimeString);
+    //   this._eventTimeValue.startTime = new Date(startTimeValue).toISOString();
+    //   this._eventTimeValue.endTime = new Date(endTimeValue).toISOString();
+    //   this._eventInfo = Object.assign({}, this._eventInfo, this._eventTimeValue);
+    //   console.log(this._eventInfo);
+    // });
+    // if (datePicker) {
+    //   datePicker.addEventListener(`input`, (evt) => {
+    //     const [startTimeString, endTimeString] = evt.target.value.split(` to `);
+    //     const startTimeValue = Date.parse(startTimeString);
+    //     const endTimeValue = Date.parse(endTimeString);
+    //     this._eventTimeValue.startTime = new Date(startTimeValue).toISOString();
+    //     this._eventTimeValue.endTime = new Date(endTimeValue).toISOString();
+    //     this._eventInfo = Object.assign({}, this._eventInfo, this._eventTimeValue);
+    //     console.log(this._eventInfo);
+    //   });
+    // }
 
     element.querySelector(`.event__input--price`)
       .addEventListener(`keydown`, (evt) => {
@@ -352,7 +347,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
     element.querySelector(`.event__input--price`)
       .addEventListener(`input`, (evt) => {
         this._currentPrice = evt.target.value;
-        this._eventInfo = Object.assign({}, this._eventInfo, this.getData());
+        this._eventInfo = Object.assign({}, this._eventInfo, {price: this._currentPrice});
         const saveButton = this.getElement().querySelector(`.event__save-btn`);
         saveButton.disabled = !this._currentPrice || !eventDestination.value;
       });

@@ -1,5 +1,5 @@
+import Event from "../models/event.js";
 import TripEvent from "../components/trip-event.js";
-// import TripEventItem from "../components/trip-event-item";
 import TripEventEdit from "../components/trip-event-edit.js";
 import {RenderPosition, render, remove, replace} from "../utils/render.js";
 import {TYPES} from "../const.js";
@@ -8,6 +8,48 @@ export const Mode = {
   ADDING: `adding`,
   DEFAULT: `default`,
   EDIT: `edit`,
+};
+
+const parseFormData = (formData, id) => {
+  const eventEditForm = document.querySelector(`.event--edit`);
+  const types = eventEditForm.querySelectorAll(`.event__type-input`);
+  const activeType = Array.from(types).find((it) => it.checked).value;
+  const [startTimeString, endTimeString] = formData.get(`event-start-time`).split(` to `);
+  const startTimeValue = Date.parse(startTimeString);
+  const endTimeValue = Date.parse(endTimeString);
+  const offerList = eventEditForm.querySelectorAll(`.event__offer-selector`);
+  const checkedOffers = Array.from(offerList).filter((it) => {
+    return it.querySelector(`.event__offer-checkbox`).checked;
+  });
+  const description = eventEditForm.querySelector(`.event__destination-description`).textContent;
+  const images = eventEditForm.querySelectorAll(`.event__photo`);
+  const pictures = [];
+  Array.from(images).forEach((it) => pictures.push({
+    'src': it.src,
+    'description': it.alt,
+  }));
+
+  const offersActive = [];
+  checkedOffers.forEach((it) => {
+    offersActive.push({
+      title: it.querySelector(`.event__offer-title`).textContent,
+      price: parseInt(it.querySelector(`.event__offer-price`).textContent, 10),
+    });
+  });
+  return new Event({
+    'id': id,
+    'type': activeType,
+    'destination': {
+      'name': formData.get(`event-destination`),
+      'description': description,
+      'pictures': pictures,
+    },
+    'date_from': new Date(startTimeValue).toISOString(),
+    'date_to': new Date(endTimeValue).toISOString(),
+    'offers': offersActive,
+    'base_price': parseInt(formData.get(`event-price`), 10),
+    'is_favorite': eventEditForm.querySelector(`.event__favorite-checkbox`).checked,
+  });
 };
 
 export const EmptyEvent = {
@@ -21,10 +63,12 @@ export const EmptyEvent = {
 };
 
 export default class PointController {
-  constructor(container, onDataChange, onViewChange) {
+  constructor(container, onDataChange, onViewChange, destinations, offers) {
     this._container = container;
     this._onDataChange = onDataChange;
     this._onViewChange = onViewChange;
+    this._destinations = destinations;
+    this._offers = offers;
     this._mode = Mode.DEFAULT;
     this._tripEvent = null;
     this._tripEventEdit = null;
@@ -39,7 +83,7 @@ export default class PointController {
     const tripEventAddButton = document.querySelector(`.trip-main__event-add-btn`);
 
     this._tripEvent = new TripEvent(event);
-    this._tripEventEdit = new TripEventEdit(event, this._mode);
+    this._tripEventEdit = new TripEventEdit(event, this._mode, this._destinations, this._offers);
 
     this._tripEvent.setEventRollupButtonClickHandler(() => {
       this._replaceEventToEdit();
@@ -48,7 +92,8 @@ export default class PointController {
 
     this._tripEventEdit.setEventEditSubmitHandler((evt) => {
       evt.preventDefault();
-      const data = this._tripEventEdit.getData();
+      const formData = this._tripEventEdit.getData();
+      const data = parseFormData(formData, event.id);
       this._onDataChange(this, event, data);
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     });
@@ -63,9 +108,9 @@ export default class PointController {
     });
 
     this._tripEventEdit.setFavoritesButtonClickHandler(() => {
-      this._onDataChange(this, event, Object.assign({}, event, {
-        isFavorite: !event.isFavorite,
-      }));
+      const newTask = Event.clone(event);
+      newTask.isFavorite = !newTask.isFavorite;
+      this._onDataChange(this, event, newTask);
     });
 
     switch (mode) {

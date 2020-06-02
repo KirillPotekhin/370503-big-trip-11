@@ -75,12 +75,7 @@ export default class Statistics extends AbstractSmartComponent {
       filteredEvents.push(this._tripEvents.slice().filter((tripEvent) => tripEvent.type === routeTypeActive));
       routeTypesObjectList[i].money = filteredEvents[i].reduce((acc, it) => acc + it.price, 0);
       routeTypesObjectList[i].amount = filteredEvents[i].length;
-      routeTypesObjectList[i].timeSpend = new Moment(filteredEvents[i].reduce((acc, it) => {
-        const startTimeValue = new Moment(it.startTime);
-        const endTimeValue = new Moment(it.endTime);
-        acc = acc + Moment.duration(endTimeValue.diff(startTimeValue));
-        return acc;
-      }, 0)).hours();
+      routeTypesObjectList[i].timeSpend = filteredEvents[i].reduce((acc, it) => acc + Moment.duration(new Moment(it.endTime).diff(new Moment(it.startTime))).hours(), 0);
       return routeTypesObjectList;
     });
     return routeTypesObjectList;
