@@ -82,6 +82,18 @@ export default class TripController {
     this._creatingEvent = null;
   }
 
+  hide() {
+    if (this._container) {
+      this._container.classList.add(`visually-hidden`);
+    }
+  }
+
+  show() {
+    if (this._container) {
+      this._container.classList.remove(`visually-hidden`);
+    }
+  }
+
   render() {
     const events = this._pointsModel.getEvents();
 
@@ -181,6 +193,7 @@ export default class TripController {
         this._getInfoCost();
         this._onSortTypeChange(this._tripSort.getSortType());
       } else {
+        newData.id = String(new Date() + Math.random());
         this._pointsModel.addEvent(newData);
         pointController.render(newData, PointControllerMode.DEFAULT);
 
@@ -230,6 +243,12 @@ export default class TripController {
   }
 
   _onFilterChange() {
+    this._updateEvents();
+    this._onSortTypeChange(SortType.DEFAULT);
+    this._tripSort.reserSortChecked();
+  }
+
+  onSortTypeReset() {
     this._updateEvents();
     this._onSortTypeChange(SortType.DEFAULT);
     this._tripSort.reserSortChecked();

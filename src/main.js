@@ -4,11 +4,12 @@ import TripInfo from "./components/trip-info.js";
 import TripTab, {TabItem} from "./components/trip-tab.js";
 import TripController from "./controllers/trip-controller.js";
 import FilterController from "./controllers/filter.js";
+import Statistics from "./components/statistics.js";
 import PointsModel from "./models/points.js";
 import {RenderPosition, render} from "./utils/render.js";
 import {FilterTypes} from "./const.js";
 
-const EVENT_COUNT = 2;
+const EVENT_COUNT = 20;
 
 const events = generateEvents(EVENT_COUNT);
 const pointsModel = new PointsModel();
@@ -31,7 +32,33 @@ tripController.render(events);
 
 const newEvent = tripMainElement.querySelector(`.trip-main__event-add-btn`);
 newEvent.addEventListener(`click`, () => {
+  tripTab.setActiveItem(TabItem.EVENTS);
+  statistics.hide();
+  tripController.show();
+  tripController.onSortTypeReset();
   filterController.onFilterChange(FilterTypes.EVERYTHING);
   filterController.render();
   tripController.createEvent();
+});
+
+const pageMain = document.querySelector(`.page-main`);
+const pageBodyContainer = pageMain.querySelector(`.page-body__container`);
+
+const statistics = new Statistics(pointsModel);
+
+render(pageBodyContainer, statistics, RenderPosition.BEFOREEND);
+statistics.hide();
+
+tripTab.setOnClick((tabItem) => {
+  switch (tabItem) {
+    case TabItem.STATISTICS:
+      tripController.hide();
+      statistics.show();
+      break;
+    case TabItem.EVENTS:
+      statistics.hide();
+      tripController.show();
+      tripController.onSortTypeReset();
+      break;
+  }
 });

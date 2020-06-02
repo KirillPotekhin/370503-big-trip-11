@@ -25,8 +25,8 @@ export default class TripTab extends AbstractComponent {
     const itemNotActive = Array.from(tabsAll).filter((it) => it.id !== tabItem)[0];
 
     if (item) {
-      itemNotActive.classList.toggle(`trip-tabs__btn--active`);
-      item.classList.toggle(`trip-tabs__btn--active`);
+      itemNotActive.classList.remove(`trip-tabs__btn--active`);
+      item.classList.add(`trip-tabs__btn--active`);
     }
   }
 
@@ -37,7 +37,7 @@ export default class TripTab extends AbstractComponent {
       }
 
       const tabItem = evt.target.id;
-
+      this.setActiveItem(tabItem);
       handler(tabItem);
     });
   }
