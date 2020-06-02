@@ -193,6 +193,7 @@ export default class TripController {
         this._getInfoCost();
         this._onSortTypeChange(this._tripSort.getSortType());
       } else {
+        newData.id = String(new Date() + Math.random());
         this._pointsModel.addEvent(newData);
         pointController.render(newData, PointControllerMode.DEFAULT);
 
