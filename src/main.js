@@ -12,25 +12,28 @@ import {FilterTypes} from "./const.js";
 const EVENT_COUNT = 20;
 
 const events = generateEvents(EVENT_COUNT);
-const pointsModel = new PointsModel();
-pointsModel.setEvents(events);
-
 const tripMainElement = document.querySelector(`.trip-main`);
-render(tripMainElement, new TripInfo(events), RenderPosition.AFTERBEGIN);
-
 const tripControlElement = tripMainElement.querySelector(`.trip-controls`);
 const tripTitlesControlElements = tripControlElement.querySelectorAll(`h2`);
-const tripTab = new TripTab();
-render(tripTitlesControlElements[0], tripTab, RenderPosition.AFTEREND);
+const tripEventElement = document.querySelector(`.trip-events`);
+const newEvent = tripMainElement.querySelector(`.trip-main__event-add-btn`);
+const pageMain = document.querySelector(`.page-main`);
+const pageBodyContainer = pageMain.querySelector(`.page-body__container`);
 
+const pointsModel = new PointsModel();
+pointsModel.setEvents(events);
+const tripTab = new TripTab();
 const filterController = new FilterController(tripControlElement, pointsModel);
 filterController.render();
-
-const tripEventElement = document.querySelector(`.trip-events`);
 const tripController = new TripController(tripEventElement, pointsModel);
 tripController.render(events);
+const statistics = new Statistics(pointsModel);
 
-const newEvent = tripMainElement.querySelector(`.trip-main__event-add-btn`);
+render(tripMainElement, new TripInfo(events), RenderPosition.AFTERBEGIN);
+render(tripTitlesControlElements[0], tripTab, RenderPosition.AFTEREND);
+render(pageBodyContainer, statistics, RenderPosition.BEFOREEND);
+statistics.hide();
+
 newEvent.addEventListener(`click`, () => {
   tripTab.setActiveItem(TabItem.EVENTS);
   statistics.hide();
@@ -40,14 +43,6 @@ newEvent.addEventListener(`click`, () => {
   filterController.render();
   tripController.createEvent();
 });
-
-const pageMain = document.querySelector(`.page-main`);
-const pageBodyContainer = pageMain.querySelector(`.page-body__container`);
-
-const statistics = new Statistics(pointsModel);
-
-render(pageBodyContainer, statistics, RenderPosition.BEFOREEND);
-statistics.hide();
 
 tripTab.setOnClick((tabItem) => {
   switch (tabItem) {
