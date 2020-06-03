@@ -67,21 +67,12 @@ tripTab.setOnClick((tabItem) => {
 
 apiWithProvider.getData()
   .then((data) => {
-    console.log(`main`, data);
     const {events, destinations, offers} = data;
-    remove(loading);
     pointsModel.setEvents(events);
     render(tripMainElement, new TripInfo(pointsModel.getEventsAll()), RenderPosition.AFTERBEGIN);
     tripController.getData(destinations, offers);
+    remove(loading);
     tripController.render();
-  })
-  .catch(() => {
-    console.log(12);
-    // remove(loading);
-    // pointsModel.setEvents([]);
-    // render(tripMainElement, new TripInfo([]), RenderPosition.AFTERBEGIN);
-    // tripController.getData([], []);
-    // tripController.render();
   });
 
 window.addEventListener(`load`, () => {

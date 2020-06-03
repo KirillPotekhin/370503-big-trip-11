@@ -199,8 +199,9 @@ export default class TripController {
         this._updateEvents();
         this._getInfoCost();
         this._onSortTypeChange(this._tripSort.getSortType());
+        return Promise.resolve();
       } else {
-        this._api.createEvent(newData)
+        return this._api.createEvent(newData)
           .then((pointModel) => {
             this._pointsModel.addEvent(pointModel);
             pointController.render(pointModel, PointControllerMode.DEFAULT);
@@ -216,7 +217,7 @@ export default class TripController {
           });
       }
     } else if (newData === null) {
-      this._api.deleteEvent(oldData.id)
+      return this._api.deleteEvent(oldData.id)
           .then(() => {
             this._pointsModel.removeEvent(oldData.id);
             this._getInfoCost();
@@ -231,7 +232,7 @@ export default class TripController {
             document.querySelector(`.event--edit`).classList.add(`error`);
           });
     } else {
-      this._api.updateEvent(oldData.id, newData)
+      return this._api.updateEvent(oldData.id, newData)
         .then((pointModel) => {
           const isSuccess = this._pointsModel.updateEvent(oldData.id, pointModel);
 

@@ -70,7 +70,7 @@ const createTripEventEditTemplate = (event, mode, offerFlag, destinations, offer
   const eventOptionMarkup = createEventOptionMarkup(offersList, offers, type);
   const isBlockSaveButton = !city || !price;
   const offerList = mode === PointControllerMode.ADDING && !offerFlag ? [] : offersList.filter((it) => it.type === type)[0].offers;
-  const pretext = (type === `Sightseeing`) || (type === `Restaurant`) || (type === `Check-in`) ? `in` : `to`;
+  const pretext = (type === `sightseeing`) || (type === `restaurant`) || (type === `check-in`) ? `in` : `to`;
   const saveButtonText = externalData.saveButtonText;
   const deleteButtonText = mode !== PointControllerMode.ADDING ? externalData.deleteButtonText : externalData.cancelButtonText;
   return (

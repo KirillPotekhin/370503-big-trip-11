@@ -1,4 +1,4 @@
-import Event from "../models/event.js";
+import Point from "../models/point.js";
 
 const ServerUrl = {
   POINTS: `https://11.ecmascript.pages.academy/big-trip/points`,
@@ -28,7 +28,7 @@ const API = class {
       url: ServerUrl.POINTS
     })
       .then((response) => response.json())
-      .then(Event.parseEvents);
+      .then(Point.parseEvents);
   }
 
   getDestinations() {
@@ -52,8 +52,7 @@ const API = class {
       this.getOffers(),
     ])
       .then((response) => {
-        console.log(`из апи`);
-        const {events, destinations, offers} = response;
+        const [events, destinations, offers] = response;
         return {
           events,
           destinations,
@@ -62,15 +61,15 @@ const API = class {
       });
   }
 
-  createEvent(event) {
+  createEvent(point) {
     return this._load({
       url: ServerUrl.POINTS,
       method: Method.POST,
-      body: JSON.stringify(event.toRAW()),
+      body: JSON.stringify(point.toRAW()),
       headers: new Headers({"Content-Type": `application/json`})
     })
       .then((response) => response.json())
-      .then(Event.parseEvent);
+      .then(Point.parseEvent);
   }
 
   updateEvent(id, data) {
@@ -81,7 +80,7 @@ const API = class {
       headers: new Headers({"Content-Type": `application/json`})
     })
       .then((response) => response.json())
-      .then(Event.parseEvent);
+      .then(Point.parseEvent);
   }
 
   deleteEvent(id) {

@@ -1,4 +1,4 @@
-import Event from "../models/event.js";
+import Point from "../models/point.js";
 import TripEvent from "../components/trip-event.js";
 import TripEventEdit from "../components/trip-event-edit.js";
 import {RenderPosition, render, remove, replace} from "../utils/render.js";
@@ -38,7 +38,7 @@ const parseFormData = (formData, id) => {
       price: parseInt(it.querySelector(`.event__offer-price`).textContent, 10),
     });
   });
-  return new Event({
+  return new Point({
     'id': id,
     'type': activeType,
     'destination': {
@@ -78,14 +78,14 @@ export default class PointController {
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
   }
 
-  render(event, mode) {
+  render(point, mode) {
     const oldEventComponent = this._tripEvent;
     const oldEventEditComponent = this._tripEventEdit;
     this._mode = mode;
     const tripEventAddButton = document.querySelector(`.trip-main__event-add-btn`);
 
-    this._tripEvent = new TripEvent(event);
-    this._tripEventEdit = new TripEventEdit(event, this._mode, this._destinations, this._offers);
+    this._tripEvent = new TripEvent(point);
+    this._tripEventEdit = new TripEventEdit(point, this._mode, this._destinations, this._offers);
 
     this._tripEvent.setEventRollupButtonClickHandler(() => {
       this._replaceEventToEdit();
@@ -95,11 +95,17 @@ export default class PointController {
     this._tripEventEdit.setEventEditSubmitHandler((evt) => {
       evt.preventDefault();
       const formData = this._tripEventEdit.getData();
-      const data = parseFormData(formData, event.id);
+      const data = parseFormData(formData, point.id);
       this._tripEventEdit.setData({
         saveButtonText: `Saving...`,
       });
-      this._onDataChange(this, event, data);
+      console.log(`saving..`);
+      this._onDataChange(this, point, data).then(() => {
+        this._tripEventEdit.setData({
+          saveButtonText: `Save`,
+        });
+        console.log(`save!!`);
+      });
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     });
 
@@ -108,7 +114,11 @@ export default class PointController {
       this._tripEventEdit.setData({
         deleteButtonText: `Deleting...`,
       });
-      this._onDataChange(this, event, null);
+      this._onDataChange(this, point, null).then(() => {
+        this._tripEventEdit.setData({
+          deleteButtonText: `Delete`,
+        });
+      });
     });
 
     this._tripEventEdit.setEventEditRollupButtonClickHandler(() => {
@@ -117,9 +127,9 @@ export default class PointController {
     });
 
     this._tripEventEdit.setFavoritesButtonClickHandler(() => {
-      const newTask = Event.clone(event);
-      newTask.isFavorite = !newTask.isFavorite;
-      this._onDataChange(this, event, newTask);
+      const newEvent = Point.clone(point);
+      newEvent.isFavorite = !newEvent.isFavorite;
+      this._onDataChange(this, point, newEvent);
     });
 
     switch (mode) {

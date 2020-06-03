@@ -30,7 +30,7 @@ const createTripEventTemplate = (event) => {
   const startTimeDate = new Date(startTime);
   const endTimeDate = new Date(endTime);
   const eventOptionMarkup = createEventOptionMarkup(offers);
-  const pretext = (type === `Sightseeing`) || (type === `Restaurant`) || (type === `Check-in`) ? `in` : `to`;
+  const pretext = (type === `sightseeing`) || (type === `restaurant`) || (type === `check-in`) ? `in` : `to`;
   return (
     `<div class="event">
         <div class="event__type">

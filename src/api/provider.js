@@ -1,4 +1,4 @@
-import Point from "../models/event.js";
+import Point from "../models/point.js";
 import {nanoid} from "nanoid";
 
 const isOnline = () => {
@@ -88,7 +88,7 @@ export default class Provider {
     if (isOnline()) {
       return this._api.getDestinations()
         .then((destinations) => {
-          this._store.setItems(destinations);
+          this._store.setDestinations(destinations);
           return destinations;
         });
     }
@@ -101,7 +101,7 @@ export default class Provider {
     if (isOnline()) {
       return this._api.getOffers()
         .then((offers) => {
-          this._store.setItems(offers);
+          this._store.setOffers(offers);
           return offers;
         });
     }
@@ -109,26 +109,20 @@ export default class Provider {
     const storeOffers = Object.values(this._store.getOffers());
     return Promise.resolve(storeOffers);
   }
-
   getData() {
-    if (isOnline()) {
-      return this._api.getData()
-        .then((response) => {
-          console.log(`6789`, response);
-          const events = createStoreStructure(response.events.map((point) => point.toRAW()));
-
-          this._store.setOffers(response.offers);
-          this._store.setDestinations(response.destinations);
-          this._store.setItems(events);
-
-          return response;
-        });
-    }
-
-    return Promise.resolve(Object.assign({},
-        {events: this._store.getEvents()},
-        {destinations: this._store.getDestinations()},
-        {offers: this._store.getOffers()}));
+    return Promise.all([
+      this.getEvents(),
+      this.getDestinations(),
+      this.getOffers(),
+    ])
+      .then((response) => {
+        const [events, destinations, offers] = response;
+        return {
+          events,
+          destinations,
+          offers,
+        };
+      });
   }
 
   sync() {
