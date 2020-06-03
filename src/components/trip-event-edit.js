@@ -323,9 +323,8 @@ export default class TripEventEdit extends AbstractSmartComponent {
 
     element.querySelector(`.event__input--price`)
       .addEventListener(`keydown`, (evt) => {
-        let key = evt.key;
         const regex = /[0-9]|Backspace/;
-        if (!regex.test(key)) {
+        if (!regex.test(evt.key)) {
           evt.preventDefault();
         }
       });
