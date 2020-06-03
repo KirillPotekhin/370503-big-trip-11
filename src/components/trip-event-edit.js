@@ -321,21 +321,6 @@ export default class TripEventEdit extends AbstractSmartComponent {
       this.rerender();
     });
 
-    Array.from(element.querySelectorAll(`.event__offer-checkbox`)).forEach((offer) => offer.addEventListener(`click`, () => {
-      const offerList = element.querySelectorAll(`.event__offer-selector`);
-      const checkedOffers = Array.from(offerList).filter((it) => {
-        return it.querySelector(`.event__offer-checkbox`).checked;
-      });
-      const offersActive = checkedOffers.map((it) => {
-        return {
-          title: it.querySelector(`.event__offer-title`).textContent,
-          price: parseInt(it.querySelector(`.event__offer-price`).textContent, 10),
-        };
-      });
-      console.log(1111);
-      this._eventInfo = Object.assign({}, this._eventInfo, {offersActive});
-    }));
-
     element.querySelector(`.event__input--price`)
       .addEventListener(`keydown`, (evt) => {
         let key = evt.key;
