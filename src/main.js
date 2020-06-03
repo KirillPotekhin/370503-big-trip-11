@@ -66,3 +66,12 @@ api.getData()
     tripController.getData(destinations, offers);
     tripController.render();
   });
+
+window.addEventListener(`load`, () => {
+  navigator.serviceWorker.register(`/sw.js`)
+    .then(() => {
+      // Действие, в случае успешной регистрации ServiceWorker
+    }).catch(() => {
+      // Действие, в случае ошибки при регистрации ServiceWorker
+    });
+});
