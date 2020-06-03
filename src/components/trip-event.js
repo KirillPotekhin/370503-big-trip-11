@@ -23,8 +23,8 @@ const createEventOptionMarkup = (optionAll) => {
   }).join(`\n`);
 };
 
-const createTripEventTemplate = (event) => {
-  const {type, startTime, endTime, destination, price, offers} = event;
+const createTripEventTemplate = (point) => {
+  const {type, startTime, endTime, destination, price, offers} = point;
   const city = destination.name;
   const typeCapitalLetter = `${type.charAt(0).toUpperCase()}${type.slice(1)}`;
   const startTimeDate = new Date(startTime);
@@ -64,13 +64,13 @@ const createTripEventTemplate = (event) => {
 };
 
 export default class TripEvent extends AbstractComponent {
-  constructor(event) {
+  constructor(point) {
     super();
-    this._event = event;
+    this._point = point;
   }
 
   getTemplate() {
-    return createTripEventTemplate(this._event);
+    return createTripEventTemplate(this._point);
   }
 
   setEventRollupButtonClickHandler(handler) {

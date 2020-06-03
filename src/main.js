@@ -11,7 +11,7 @@ import PointsModel from "./models/points.js";
 import {RenderPosition, render, remove} from "./utils/render.js";
 import {FilterTypes} from "./const.js";
 
-const AUTHORIZATION = `Basic HJKhugk24HKhkhqOFDa=`;
+const AUTHORIZATION = `Basic HJKhugk21HKrkhqOFDa=`;
 const STORE_PREFIX = `big-trip-localstorage`;
 const STORE_VER = `v1`;
 const STORE_NAME = `${STORE_PREFIX}-${STORE_VER}`;
@@ -45,7 +45,7 @@ newEvent.addEventListener(`click`, () => {
   tripTab.setActiveItem(TabItem.EVENTS);
   statistics.hide();
   tripController.show();
-  tripController.onSortTypeReset();
+  // tripController.onSortTypeReset();
   filterController.onFilterChange(FilterTypes.EVERYTHING);
   filterController.render();
   tripController.createEvent();
@@ -66,8 +66,8 @@ tripTab.setOnClick((tabItem) => {
 });
 
 apiWithProvider.getData()
-  .then((data) => {
-    const {events, destinations, offers} = data;
+  .then((tripInfo) => {
+    const {events, destinations, offers} = tripInfo;
     pointsModel.setEvents(events);
     render(tripMainElement, new TripInfo(pointsModel.getEventsAll()), RenderPosition.AFTERBEGIN);
     tripController.getData(destinations, offers);

@@ -28,7 +28,7 @@ export default class Provider {
     if (isOnline()) {
       return this._api.getEvents()
         .then((points) => {
-          const events = createStoreStructure(points.map((point) => point.toRAW()));
+          const events = createStoreStructure(points.map((point) => point.toRaw()));
 
           this._store.setItems(events);
 
@@ -44,7 +44,7 @@ export default class Provider {
     if (isOnline()) {
       return this._api.createEvent(point)
         .then((newPoint) => {
-          this._store.setItem(newPoint.id, newPoint.toRAW());
+          this._store.setItem(newPoint.id, newPoint.toRaw());
 
           return newPoint;
         });
@@ -53,7 +53,7 @@ export default class Provider {
     const localNewPointId = nanoid();
     const localNewPoint = Point.clone(Object.assign(point, {id: localNewPointId}));
 
-    this._store.setItem(localNewPoint.id, localNewPoint.toRAW());
+    this._store.setItem(localNewPoint.id, localNewPoint.toRaw());
 
     return Promise.resolve(localNewPoint);
   }
@@ -62,14 +62,14 @@ export default class Provider {
     if (isOnline()) {
       return this._api.updateEvent(id, point)
         .then((newPoint) => {
-          this._store.setItem(newPoint.id, newPoint.toRAW());
+          this._store.setItem(newPoint.id, newPoint.toRaw());
 
           return newPoint;
         });
     }
 
     const localPoint = Point.clone(Object.assign(point, {id}));
-    this._store.setItem(id, localPoint.toRAW());
+    this._store.setItem(id, localPoint.toRaw());
 
     return Promise.resolve(localPoint);
   }

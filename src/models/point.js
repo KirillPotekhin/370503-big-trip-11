@@ -1,16 +1,16 @@
-export default class Event {
-  constructor(data) {
-    this.id = data[`id`];
-    this.type = data[`type`];
-    this.startTime = data[`date_from`];
-    this.endTime = data[`date_to`];
-    this.destination = data[`destination`];
-    this.price = data[`base_price`];
-    this.offers = data[`offers`];
-    this.isFavorite = Boolean(data[`is_favorite`]);
+export default class Point {
+  constructor(point) {
+    this.id = point[`id`];
+    this.type = point[`type`];
+    this.startTime = point[`date_from`];
+    this.endTime = point[`date_to`];
+    this.destination = point[`destination`];
+    this.price = point[`base_price`];
+    this.offers = point[`offers`];
+    this.isFavorite = Boolean(point[`is_favorite`]);
   }
 
-  toRAW() {
+  toRaw() {
     return {
       'id': this.id,
       'type': this.type,
@@ -23,15 +23,15 @@ export default class Event {
     };
   }
 
-  static parseEvent(data) {
-    return new Event(data);
+  static parseEvent(point) {
+    return new Point(point);
   }
 
-  static parseEvents(data) {
-    return data.map(Event.parseEvent);
+  static parseEvents(point) {
+    return point.map(Point.parseEvent);
   }
 
-  static clone(data) {
-    return new Event(data.toRAW());
+  static clone(point) {
+    return new Point(point.toRaw());
   }
 }

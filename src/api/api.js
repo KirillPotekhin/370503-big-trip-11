@@ -65,18 +65,18 @@ const API = class {
     return this._load({
       url: ServerUrl.POINTS,
       method: Method.POST,
-      body: JSON.stringify(point.toRAW()),
+      body: JSON.stringify(point.toRaw()),
       headers: new Headers({"Content-Type": `application/json`})
     })
       .then((response) => response.json())
       .then(Point.parseEvent);
   }
 
-  updateEvent(id, data) {
+  updateEvent(id, point) {
     return this._load({
       url: `${ServerUrl.POINTS}/${id}`,
       method: Method.PUT,
-      body: JSON.stringify(data.toRAW()),
+      body: JSON.stringify(point.toRaw()),
       headers: new Headers({"Content-Type": `application/json`})
     })
       .then((response) => response.json())
@@ -90,11 +90,11 @@ const API = class {
     });
   }
 
-  sync(data) {
+  sync(points) {
     return this._load({
       url: ServerUrl.SYNC,
       method: Method.POST,
-      body: JSON.stringify(data),
+      body: JSON.stringify(points),
       headers: new Headers({"Content-Type": `application/json`})
     })
       .then((response) => response.json());

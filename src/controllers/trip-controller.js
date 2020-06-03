@@ -42,7 +42,7 @@ const getSortedEvents = (eventsList, sortType) => {
   const getRouteDate = () => {
     return routeDateList.
       map((it, i) => {
-        return eventsList.slice().filter((item) => Date.parse(new Date(item.startTime).toLocaleDateString(`en-US`)) === getRouteDateList()[i]);
+        return eventsList.slice().filter((item) => Date.parse(new Date(item.startTime).toLocaleDateString(`en-US`)) === routeDateList[i]);
       });
   };
   const routeDates = getRouteDate();
@@ -144,8 +144,8 @@ export default class TripController {
   _renderEvents(events) {
     const tripDayElement = this._container.querySelector(`.trip-days`);
     const getRouteDateList = () => {
-      let datesEvents = events.map((event) => {
-        return (Date.parse(new Date(event.startTime).toLocaleDateString(`en-US`)));
+      let datesEvents = events.map((point) => {
+        return (Date.parse(new Date(point.startTime).toLocaleDateString(`en-US`)));
       });
       datesEvents = Array.from(new Set([...datesEvents])).sort((a, b) => a - b);
       return datesEvents;
@@ -155,7 +155,7 @@ export default class TripController {
     const getRouteDate = () => {
       return routeDateList.
         map((it, i) => {
-          return events.filter((item) => Date.parse(new Date(item.startTime).toLocaleDateString(`en-US`)) === getRouteDateList()[i]);
+          return events.filter((item) => Date.parse(new Date(item.startTime).toLocaleDateString(`en-US`)) === routeDateList[i]);
         });
     };
     const routeDates = getRouteDate();
@@ -180,7 +180,6 @@ export default class TripController {
     const offersCost = this._pointsModel.getEvents().reduce((acc, it) => {
       it.offers.forEach((offer) => {
         acc = acc + offer.price;
-        return acc;
       });
       return acc;
     }, 0);
@@ -213,7 +212,7 @@ export default class TripController {
           })
           .catch(() => {
             pointController.shake();
-            document.querySelector(`.event--edit`).classList.add(`error`);
+            document.querySelector(`.trip-events__item`).classList.add(`invalid-form`);
           });
       }
     } else if (newData === null) {
@@ -229,13 +228,12 @@ export default class TripController {
           })
           .catch(() => {
             pointController.shake();
-            document.querySelector(`.event--edit`).classList.add(`error`);
+            document.querySelector(`.trip-events__item`).classList.add(`invalid-form`);
           });
     } else {
       return this._api.updateEvent(oldData.id, newData)
         .then((pointModel) => {
           const isSuccess = this._pointsModel.updateEvent(oldData.id, pointModel);
-
           if (isSuccess) {
             pointController.render(pointModel);
             this._getInfoCost();
@@ -245,7 +243,7 @@ export default class TripController {
         })
         .catch(() => {
           pointController.shake();
-          document.querySelector(`.event--edit`).classList.add(`error`);
+          document.querySelector(`.trip-events__item`).classList.add(`invalid-form`);
         });
     }
   }

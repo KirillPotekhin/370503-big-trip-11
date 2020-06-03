@@ -2,7 +2,7 @@ import Point from "../models/point.js";
 import TripEvent from "../components/trip-event.js";
 import TripEventEdit from "../components/trip-event-edit.js";
 import {RenderPosition, render, remove, replace} from "../utils/render.js";
-import {TYPES} from "../const.js";
+import {eventTypes} from "../const.js";
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
@@ -25,18 +25,18 @@ const parseFormData = (formData, id) => {
   });
   const description = eventEditForm.querySelector(`.event__destination-description`).textContent;
   const images = eventEditForm.querySelectorAll(`.event__photo`);
-  const pictures = [];
-  Array.from(images).forEach((it) => pictures.push({
-    'src': it.src,
-    'description': it.alt,
-  }));
+  const pictures = Array.from(images).map((it) => {
+    return {
+      'src': it.src,
+      'description': it.alt,
+    };
+  });
 
-  const offersActive = [];
-  checkedOffers.forEach((it) => {
-    offersActive.push({
+  const offersActive = checkedOffers.map((it) => {
+    return {
       title: it.querySelector(`.event__offer-title`).textContent,
       price: parseInt(it.querySelector(`.event__offer-price`).textContent, 10),
-    });
+    };
   });
   return new Point({
     'id': id,
@@ -55,7 +55,7 @@ const parseFormData = (formData, id) => {
 };
 
 export const EmptyEvent = {
-  type: TYPES[0],
+  type: eventTypes[0],
   destination: {
     name: ``,
   },
@@ -95,17 +95,21 @@ export default class PointController {
     this._tripEventEdit.setEventEditSubmitHandler((evt) => {
       evt.preventDefault();
       const formData = this._tripEventEdit.getData();
-      const data = parseFormData(formData, point.id);
+      const info = parseFormData(formData, point.id);
+      document.querySelector(`.trip-events__item`).classList.remove(`invalid-form`);
       this._tripEventEdit.setData({
         saveButtonText: `Saving...`,
       });
-      console.log(`saving..`);
-      this._onDataChange(this, point, data).then(() => {
-        this._tripEventEdit.setData({
-          saveButtonText: `Save`,
+      this.blockForm();
+
+      this._onDataChange(this, point, info)
+        .then(() => {
+          setTimeout(() => {
+            return this._tripEventEdit.setData({
+              saveButtonText: `Save`,
+            });
+          }, SHAKE_ANIMATION_TIMEOUT);
         });
-        console.log(`save!!`);
-      });
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     });
 
@@ -114,10 +118,14 @@ export default class PointController {
       this._tripEventEdit.setData({
         deleteButtonText: `Deleting...`,
       });
+      this.blockForm();
+
       this._onDataChange(this, point, null).then(() => {
-        this._tripEventEdit.setData({
-          deleteButtonText: `Delete`,
-        });
+        setTimeout(() => {
+          return this._tripEventEdit.setData({
+            deleteButtonText: `Delete`,
+          });
+        }, SHAKE_ANIMATION_TIMEOUT);
       });
     });
 
@@ -168,6 +176,12 @@ export default class PointController {
     }
   }
 
+  blockForm() {
+    const eventEditForm = document.querySelector(`.event--edit`);
+    Array.from(eventEditForm.querySelectorAll(`input`)).forEach((inputPlace) => (inputPlace.disabled = true));
+    Array.from(eventEditForm.querySelectorAll(`button`)).forEach((buttonForm) => (buttonForm.disabled = true));
+  }
+
   setDefaultView() {
     if (this._mode !== Mode.DEFAULT) {
       this._replaceEditToEvent();
@@ -198,15 +212,9 @@ export default class PointController {
   shake() {
     this._tripEventEdit.getElement().style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
     this._tripEvent.getElement().style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
-
     setTimeout(() => {
       this._tripEventEdit.getElement().style.animation = ``;
       this._tripEvent.getElement().style.animation = ``;
-
-      this._tripEventEdit.setData({
-        saveButtonText: `Save`,
-        deleteButtonText: `Delete`,
-      });
     }, SHAKE_ANIMATION_TIMEOUT);
   }
 
