@@ -1,4 +1,4 @@
-import Event from "./models/event.js";
+import Point from "../models/point.js";
 
 const ServerUrl = {
   POINTS: `https://11.ecmascript.pages.academy/big-trip/points`,
@@ -28,7 +28,7 @@ const API = class {
       url: ServerUrl.POINTS
     })
       .then((response) => response.json())
-      .then(Event.parseEvents);
+      .then(Point.parseEvents);
   }
 
   getDestinations() {
@@ -61,26 +61,26 @@ const API = class {
       });
   }
 
-  createEvent(event) {
+  createEvent(point) {
     return this._load({
       url: ServerUrl.POINTS,
       method: Method.POST,
-      body: JSON.stringify(event.toRAW()),
+      body: JSON.stringify(point.toRaw()),
       headers: new Headers({"Content-Type": `application/json`})
     })
       .then((response) => response.json())
-      .then(Event.parseEvent);
+      .then(Point.parseEvent);
   }
 
-  updateEvent(id, data) {
+  updateEvent(id, point) {
     return this._load({
       url: `${ServerUrl.POINTS}/${id}`,
       method: Method.PUT,
-      body: JSON.stringify(data.toRAW()),
+      body: JSON.stringify(point.toRaw()),
       headers: new Headers({"Content-Type": `application/json`})
     })
       .then((response) => response.json())
-      .then(Event.parseEvent);
+      .then(Point.parseEvent);
   }
 
   deleteEvent(id) {
@@ -88,6 +88,16 @@ const API = class {
       url: `${ServerUrl.POINTS}/${id}`,
       method: Method.DELETE
     });
+  }
+
+  sync(points) {
+    return this._load({
+      url: ServerUrl.SYNC,
+      method: Method.POST,
+      body: JSON.stringify(points),
+      headers: new Headers({"Content-Type": `application/json`})
+    })
+      .then((response) => response.json());
   }
 
   _load({url, method = Method.GET, body = null, headers = new Headers()}) {

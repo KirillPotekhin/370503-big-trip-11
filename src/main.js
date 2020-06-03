@@ -1,4 +1,6 @@
-import API from "./api.js";
+import API from "./api/api.js";
+import Store from "./api/store.js";
+import Provider from "./api/provider.js";
 import Loading from './components/loading.js';
 import TripInfo from "./components/trip-info.js";
 import TripTab, {TabItem} from "./components/trip-tab.js";
@@ -8,9 +10,15 @@ import Statistics from "./components/statistics.js";
 import PointsModel from "./models/points.js";
 import {RenderPosition, render, remove} from "./utils/render.js";
 import {FilterTypes} from "./const.js";
-const AUTHORIZATION = `Basic HJKhugkhJHKhkhqOFDa=`;
+
+const AUTHORIZATION = `Basic HJKhugk21HKrkhqOFDa=`;
+const STORE_PREFIX = `big-trip-localstorage`;
+const STORE_VER = `v1`;
+const STORE_NAME = `${STORE_PREFIX}-${STORE_VER}`;
 
 const api = new API(AUTHORIZATION);
+const store = new Store(STORE_NAME, window.localStorage);
+const apiWithProvider = new Provider(api, store);
 const pointsModel = new PointsModel();
 
 const tripMainElement = document.querySelector(`.trip-main`);
@@ -25,7 +33,7 @@ const loading = new Loading();
 const tripTab = new TripTab();
 const filterController = new FilterController(tripControlElement, pointsModel);
 filterController.render();
-const tripController = new TripController(tripEventElement, pointsModel, api);
+const tripController = new TripController(tripEventElement, pointsModel, apiWithProvider);
 const statistics = new Statistics(pointsModel);
 
 render(pageBodyContainer, loading, RenderPosition.BEFOREEND);
@@ -37,7 +45,7 @@ newEvent.addEventListener(`click`, () => {
   tripTab.setActiveItem(TabItem.EVENTS);
   statistics.hide();
   tripController.show();
-  tripController.onSortTypeReset();
+  // tripController.onSortTypeReset();
   filterController.onFilterChange(FilterTypes.EVERYTHING);
   filterController.render();
   tripController.createEvent();
@@ -57,12 +65,26 @@ tripTab.setOnClick((tabItem) => {
   }
 });
 
-api.getData()
-  .then((data) => {
-    const {events, destinations, offers} = data;
-    remove(loading);
+apiWithProvider.getData()
+  .then((tripInfo) => {
+    const {events, destinations, offers} = tripInfo;
     pointsModel.setEvents(events);
     render(tripMainElement, new TripInfo(pointsModel.getEventsAll()), RenderPosition.AFTERBEGIN);
     tripController.getData(destinations, offers);
+    remove(loading);
     tripController.render();
   });
+
+window.addEventListener(`load`, () => {
+  navigator.serviceWorker.register(`/sw.js`);
+});
+
+window.addEventListener(`online`, () => {
+  document.title = document.title.replace(` [offline]`, ``);
+
+  apiWithProvider.sync();
+});
+
+window.addEventListener(`offline`, () => {
+  document.title += ` [offline]`;
+});

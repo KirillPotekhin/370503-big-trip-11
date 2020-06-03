@@ -1,7 +1,7 @@
 import AbstractSmartComponent from "./abstract-smart-component.js";
 import Chart from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import {ChartConfiguration, TYPES, ChartTypeLabelsMap} from "../const.js";
+import {ChartConfiguration, eventTypes, ChartTypeLabelsMap} from "../const.js";
 import Moment from "moment";
 
 const createStatisticTemplate = () => {
@@ -50,48 +50,35 @@ export default class Statistics extends AbstractSmartComponent {
   }
 
   _getTripEventsTypes() {
-    let routeTypes = this._tripEvents.map((event) => {
-      return event.type;
+    let routeTypes = this._tripEvents.map((point) => {
+      return point.type;
     });
     routeTypes = Array.from(new Set([...routeTypes]));
     return routeTypes;
   }
 
   _routeTypesObjectList() {
-    const routeTypesObjectList = [];
-    this._getTripEventsTypes().map((routeType) => {
-      routeTypesObjectList.push({
-        type: routeType,
-      });
-      return routeTypesObjectList;
+    return this._getTripEventsTypes().map((routeType) => {
+      return {
+        type: routeType
+      };
     });
-    return routeTypesObjectList;
   }
 
   _routeTypesDataList() {
-    const filteredEvents = [];
     const routeTypesObjectList = this._routeTypesObjectList();
     this._getTripEventsTypes().forEach((routeTypeActive, i) => {
-      filteredEvents.push(this._tripEvents.slice().filter((tripEvent) => tripEvent.type === routeTypeActive));
-      routeTypesObjectList[i].money = filteredEvents[i].reduce((acc, it) => acc + it.price, 0);
-      routeTypesObjectList[i].amount = filteredEvents[i].length;
-      routeTypesObjectList[i].timeSpend = filteredEvents[i].reduce((acc, it) => acc + Moment.duration(new Moment(it.endTime).diff(new Moment(it.startTime))).hours(), 0);
+      const filteredEvents = (this._tripEvents.slice().filter((tripEvent) => tripEvent.type === routeTypeActive));
+      routeTypesObjectList[i].money = filteredEvents.reduce((acc, it) => acc + it.price, 0);
+      routeTypesObjectList[i].amount = filteredEvents.length;
+      routeTypesObjectList[i].timeSpend = filteredEvents.reduce((acc, it) => acc + Moment.duration(new Moment(it.endTime).diff(new Moment(it.startTime))).hours(), 0);
       return routeTypesObjectList;
     });
     return routeTypesObjectList;
   }
-
   _getTransportEvents() {
-    const transportEvents = [];
-    TYPES.slice(0, 7).forEach((type) => {
-      this._routeTypesDataList().forEach((tripEventType) => {
-        if (tripEventType.type === type) {
-          transportEvents.push(tripEventType);
-        }
-      });
-    });
-
-    return transportEvents;
+    const transports = new Set(eventTypes.slice(0, 7));
+    return this._routeTypesDataList().filter((tripEventType) => transports.has(tripEventType.type));
   }
 
   _renderCharts() {

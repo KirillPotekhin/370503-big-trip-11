@@ -22,7 +22,7 @@ export default class TripTab extends AbstractComponent {
   setActiveItem(tabItem) {
     const item = document.querySelector(`#${tabItem}`);
     const tabsAll = document.querySelectorAll(`.trip-tabs__btn`);
-    const itemNotActive = Array.from(tabsAll).filter((it) => it.id !== tabItem)[0];
+    const itemNotActive = Array.from(tabsAll).find((it) => it.id !== tabItem);
 
     if (item) {
       itemNotActive.classList.remove(`trip-tabs__btn--active`);

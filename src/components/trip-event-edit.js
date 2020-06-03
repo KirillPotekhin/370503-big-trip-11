@@ -1,4 +1,4 @@
-import {TYPES} from "../const.js";
+import {eventTypes} from "../const.js";
 import AbstractSmartComponent from "./abstract-smart-component.js";
 import flatpickr from "flatpickr";
 import RangePlugin from "flatpickr/dist/plugins/rangePlugin";
@@ -57,20 +57,20 @@ const createDestinationItemMarkup = (cities) => {
     }).join(`\n`);
 };
 
-const createTripEventEditTemplate = (event, mode, offerFlag, destinations, offersList, externalData = DefaultData) => {
-  const {type, destination, price, offers, isFavorite} = event;
+const createTripEventEditTemplate = (point, mode, offerFlag, destinations, offersList, externalData = DefaultData) => {
+  const {type, destination, price, offers, isFavorite} = point;
   const city = destination.name;
   const description = city ? destinations.find((it) => it.name === city).description : ``;
   const photos = city ? destinations.find((it) => it.name === city).pictures : ``;
   const eventPhotoMarkup = city ? createEventPhotoMarkup(photos) : ``;
   const typeCapitalLetter = `${type.charAt(0).toUpperCase()}${type.slice(1)}`;
   const destinationItemMarkup = createDestinationItemMarkup(destinations);
-  const eventTypeTransferMarkup = createEventTypeMarkup(TYPES.slice(0, 7), type);
-  const eventTypeActivityMarkup = createEventTypeMarkup(TYPES.slice(-3), type);
+  const eventTypeTransferMarkup = createEventTypeMarkup(eventTypes.slice(0, 7), type);
+  const eventTypeActivityMarkup = createEventTypeMarkup(eventTypes.slice(-3), type);
   const eventOptionMarkup = createEventOptionMarkup(offersList, offers, type);
   const isBlockSaveButton = !city || !price;
   const offerList = mode === PointControllerMode.ADDING && !offerFlag ? [] : offersList.filter((it) => it.type === type)[0].offers;
-  const pretext = (type === `Sightseeing`) || (type === `Restaurant`) || (type === `Check-in`) ? `in` : `to`;
+  const pretext = (type === `sightseeing`) || (type === `restaurant`) || (type === `check-in`) ? `in` : `to`;
   const saveButtonText = externalData.saveButtonText;
   const deleteButtonText = mode !== PointControllerMode.ADDING ? externalData.deleteButtonText : externalData.cancelButtonText;
   return (
@@ -167,9 +167,9 @@ const createTripEventEditTemplate = (event, mode, offerFlag, destinations, offer
 };
 
 export default class TripEventEdit extends AbstractSmartComponent {
-  constructor(event, mode, destinations, offers) {
+  constructor(point, mode, destinations, offers) {
     super();
-    this._event = event;
+    this._point = point;
     this._mode = mode;
     this._destinations = destinations;
     this._offers = offers;
@@ -179,9 +179,9 @@ export default class TripEventEdit extends AbstractSmartComponent {
     this._flatpickr = null;
     this._eventTimeValue = {};
     this._deleteButtonClickHandler = null;
-    this._eventInfo = Object.assign({}, this._event);
-    this._activeEventType = {type: this._event.type};
-    this._eventDestinationValue = {destination: this._event.destination};
+    this._eventInfo = Object.assign({}, this._point);
+    this._activeEventType = {type: this._point.type};
+    this._eventDestinationValue = {destination: this._point.destination};
     this._applyFlatpickr();
     this._subscribeOnEvents();
     this._isOffer = null;
@@ -215,9 +215,8 @@ export default class TripEventEdit extends AbstractSmartComponent {
   }
 
   reset() {
-    const event = this._event;
-
-    this._activeEventType = {type: event.type};
+    const point = this._point;
+    this._activeEventType = {type: point.type};
     this._eventDestinationValue = {};
 
     this.rerender();
@@ -228,8 +227,8 @@ export default class TripEventEdit extends AbstractSmartComponent {
     return new FormData(eventEditForm);
   }
 
-  setData(data) {
-    this._externalData = Object.assign({}, DefaultData, data);
+  setData(info) {
+    this._externalData = Object.assign({}, DefaultData, info);
     this.rerender();
   }
 
@@ -320,41 +319,14 @@ export default class TripEventEdit extends AbstractSmartComponent {
       const saveButton = this.getElement().querySelector(`.event__save-btn`);
       saveButton.disabled = !this._eventInfo.price || !eventDestination.value;
       this.rerender();
-
     });
-
-    // const datePicker = element.querySelector(`.flatpickr-input`);
-    // datePicker.addEventListener(`input`, (evt) => {
-    //   const [startTimeString, endTimeString] = evt.target.value.split(` to `);
-    //   const startTimeValue = Date.parse(startTimeString);
-    //   const endTimeValue = Date.parse(endTimeString);
-    //   this._eventTimeValue.startTime = new Date(startTimeValue).toISOString();
-    //   this._eventTimeValue.endTime = new Date(endTimeValue).toISOString();
-    //   this._eventInfo = Object.assign({}, this._eventInfo, this._eventTimeValue);
-    //   console.log(this._eventInfo);
-    // });
-    // if (datePicker) {
-    //   datePicker.addEventListener(`input`, (evt) => {
-    //     const [startTimeString, endTimeString] = evt.target.value.split(` to `);
-    //     const startTimeValue = Date.parse(startTimeString);
-    //     const endTimeValue = Date.parse(endTimeString);
-    //     this._eventTimeValue.startTime = new Date(startTimeValue).toISOString();
-    //     this._eventTimeValue.endTime = new Date(endTimeValue).toISOString();
-    //     this._eventInfo = Object.assign({}, this._eventInfo, this._eventTimeValue);
-    //     console.log(this._eventInfo);
-    //   });
-    // }
 
     element.querySelector(`.event__input--price`)
       .addEventListener(`keydown`, (evt) => {
-        const theEvent = evt || window.event;
-        let key = theEvent.key;
+        let key = evt.key;
         const regex = /[0-9]|Backspace/;
         if (!regex.test(key)) {
-          theEvent.returnValue = false;
-          if (theEvent.preventDefault) {
-            theEvent.preventDefault();
-          }
+          evt.preventDefault();
         }
       });
 

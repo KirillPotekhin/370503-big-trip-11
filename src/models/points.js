@@ -42,22 +42,22 @@ export default class Points {
     return true;
   }
 
-  updateEvent(id, event) {
+  updateEvent(id, point) {
     const index = this._events.findIndex((it) => it.id === id);
 
     if (index === -1) {
       return false;
     }
 
-    this._events = [].concat(this._events.slice(0, index), event, this._events.slice(index + 1));
+    this._events = [].concat(this._events.slice(0, index), point, this._events.slice(index + 1));
 
     this._callHandlers(this._dataChangeHandlers);
 
     return true;
   }
 
-  addEvent(event) {
-    this._events = [].concat(event, this._events);
+  addEvent(point) {
+    this._events = [].concat(point, this._events);
     this._callHandlers(this._dataChangeHandlers);
   }
 

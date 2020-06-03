@@ -1,4 +1,4 @@
-export const TYPES = [
+export const eventTypes = [
   `taxi`,
   `bus`,
   `train`,
