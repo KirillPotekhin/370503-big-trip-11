@@ -5,6 +5,12 @@ import RangePlugin from "flatpickr/dist/plugins/rangePlugin";
 import "flatpickr/dist/flatpickr.min.css";
 import {Mode as PointControllerMode} from "../controllers/point-controller.js";
 
+const DefaultData = {
+  deleteButtonText: `Delete`,
+  saveButtonText: `Save`,
+  cancelButtonText: `Cancel`,
+};
+
 const createEventTypeMarkup = (types, activeType) => {
   return types
     .map((type, index) => {
@@ -51,7 +57,7 @@ const createDestinationItemMarkup = (cities) => {
     }).join(`\n`);
 };
 
-const createTripEventEditTemplate = (event, mode, offerFlag, destinations, offersList) => {
+const createTripEventEditTemplate = (event, mode, offerFlag, destinations, offersList, externalData = DefaultData) => {
   const {type, destination, price, offers, isFavorite} = event;
   const city = destination.name;
   const description = city ? destinations.find((it) => it.name === city).description : ``;
@@ -65,6 +71,8 @@ const createTripEventEditTemplate = (event, mode, offerFlag, destinations, offer
   const isBlockSaveButton = !city || !price;
   const offerList = mode === PointControllerMode.ADDING && !offerFlag ? [] : offersList.filter((it) => it.type === type)[0].offers;
   const pretext = (type === `Sightseeing`) || (type === `Restaurant`) || (type === `Check-in`) ? `in` : `to`;
+  const saveButtonText = externalData.saveButtonText;
+  const deleteButtonText = mode !== PointControllerMode.ADDING ? externalData.deleteButtonText : externalData.cancelButtonText;
   return (
     `<form class="event  event--edit trip-events__item" action="#" method="post">
         <header class="event__header">
@@ -118,8 +126,8 @@ const createTripEventEditTemplate = (event, mode, offerFlag, destinations, offer
             <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton ? `disabled` : ``}>Save</button>
-          <button class="event__reset-btn" type="reset">${mode === PointControllerMode.ADDING ? `Cancel` : `Delete`}</button>
+          <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton ? `disabled` : ``}>${saveButtonText}</button>
+          <button class="event__reset-btn" type="reset">${deleteButtonText}</button>
 
           <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
           <label class="event__favorite-btn" for="event-favorite-1" ${mode === PointControllerMode.ADDING ? `style="display: none"` : ``}>
@@ -177,10 +185,11 @@ export default class TripEventEdit extends AbstractSmartComponent {
     this._applyFlatpickr();
     this._subscribeOnEvents();
     this._isOffer = null;
+    this._externalData = DefaultData;
   }
 
   getTemplate() {
-    return createTripEventEditTemplate(this._eventInfo, this._mode, this._isOffer, this._destinations, this._offers);
+    return createTripEventEditTemplate(this._eventInfo, this._mode, this._isOffer, this._destinations, this._offers, this._externalData);
   }
 
   removeElement() {
@@ -217,6 +226,11 @@ export default class TripEventEdit extends AbstractSmartComponent {
   getData() {
     const eventEditForm = document.querySelector(`.event--edit`);
     return new FormData(eventEditForm);
+  }
+
+  setData(data) {
+    this._externalData = Object.assign({}, DefaultData, data);
+    this.rerender();
   }
 
   setEventEditSubmitHandler(handler) {

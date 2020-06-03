@@ -200,23 +200,36 @@ export default class TripController {
         this._getInfoCost();
         this._onSortTypeChange(this._tripSort.getSortType());
       } else {
-        newData.id = String(new Date() + Math.random());
-        this._pointsModel.addEvent(newData);
-        pointController.render(newData, PointControllerMode.DEFAULT);
+        this._api.createEvent(newData)
+          .then((pointModel) => {
+            this._pointsModel.addEvent(pointModel);
+            pointController.render(pointModel, PointControllerMode.DEFAULT);
 
-        const pointControllerWripper = [[pointController]];
-        this._showedEventControllers = [].concat(pointControllerWripper, this._showedEventControllers);
-        this._getInfoCost();
-        this._onSortTypeChange(this._tripSort.getSortType());
+            const pointControllerWripper = [[pointController]];
+            this._showedEventControllers = [].concat(pointControllerWripper, this._showedEventControllers);
+            this._getInfoCost();
+            this._onSortTypeChange(this._tripSort.getSortType());
+          })
+          .catch(() => {
+            pointController.shake();
+            document.querySelector(`.event--edit`).classList.add(`error`);
+          });
       }
     } else if (newData === null) {
-      this._pointsModel.removeEvent(oldData.id);
-      this._updateEvents();
-      this._getInfoCost();
-      this._onSortTypeChange(this._tripSort.getSortType());
-      if (!this._pointsModel.getEvents().length) {
-        render(this._container, this._noPointComponent, RenderPosition.BEFOREEND);
-      }
+      this._api.deleteEvent(oldData.id)
+          .then(() => {
+            this._pointsModel.removeEvent(oldData.id);
+            this._getInfoCost();
+            this._updateEvents();
+            this._onSortTypeChange(this._tripSort.getSortType());
+            if (!this._pointsModel.getEvents().length) {
+              render(this._container, this._noPointComponent, RenderPosition.BEFOREEND);
+            }
+          })
+          .catch(() => {
+            pointController.shake();
+            document.querySelector(`.event--edit`).classList.add(`error`);
+          });
     } else {
       this._api.updateEvent(oldData.id, newData)
         .then((pointModel) => {
@@ -228,6 +241,10 @@ export default class TripController {
             this._onSortTypeChange(this._tripSort.getSortType());
             this._updateEvents();
           }
+        })
+        .catch(() => {
+          pointController.shake();
+          document.querySelector(`.event--edit`).classList.add(`error`);
         });
     }
   }
