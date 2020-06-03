@@ -4,6 +4,8 @@ import TripEventEdit from "../components/trip-event-edit.js";
 import {RenderPosition, render, remove, replace} from "../utils/render.js";
 import {TYPES} from "../const.js";
 
+const SHAKE_ANIMATION_TIMEOUT = 600;
+
 export const Mode = {
   ADDING: `adding`,
   DEFAULT: `default`,
@@ -94,11 +96,18 @@ export default class PointController {
       evt.preventDefault();
       const formData = this._tripEventEdit.getData();
       const data = parseFormData(formData, event.id);
+      this._tripEventEdit.setData({
+        saveButtonText: `Saving...`,
+      });
       this._onDataChange(this, event, data);
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     });
 
-    this._tripEventEdit.setDeleteButtonClickHandler(() => {
+    this._tripEventEdit.setDeleteButtonClickHandler((evt) => {
+      evt.preventDefault();
+      this._tripEventEdit.setData({
+        deleteButtonText: `Deleting...`,
+      });
       this._onDataChange(this, event, null);
     });
 
@@ -174,6 +183,21 @@ export default class PointController {
       replace(this._tripEvent, this._tripEventEdit);
     }
     this._mode = Mode.DEFAULT;
+  }
+
+  shake() {
+    this._tripEventEdit.getElement().style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
+    this._tripEvent.getElement().style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
+
+    setTimeout(() => {
+      this._tripEventEdit.getElement().style.animation = ``;
+      this._tripEvent.getElement().style.animation = ``;
+
+      this._tripEventEdit.setData({
+        saveButtonText: `Save`,
+        deleteButtonText: `Delete`,
+      });
+    }, SHAKE_ANIMATION_TIMEOUT);
   }
 
   _onEscKeyDown(evt) {
