@@ -321,7 +321,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
       this.rerender();
     });
 
-    Array.from(element.querySelectorAll(`.event__offer-checkbox`)).forEach((offer) => offer.addEventListener(`click`, () => {
+    element.querySelectorAll(`.event__offer-checkbox`).forEach((offer) => offer.addEventListener(`click`, () => {
       const offerList = element.querySelectorAll(`.event__offer-selector`);
       const checkedOffers = Array.from(offerList).filter((it) => {
         return it.querySelector(`.event__offer-checkbox`).checked;

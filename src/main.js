@@ -51,20 +51,6 @@ newEvent.addEventListener(`click`, () => {
   tripController.createEvent();
 });
 
-tripTab.setOnClick((tabItem) => {
-  switch (tabItem) {
-    case TabItem.STATISTICS:
-      tripController.hide();
-      statistics.show();
-      break;
-    case TabItem.EVENTS:
-      statistics.hide();
-      tripController.show();
-      tripController.onSortTypeReset();
-      break;
-  }
-});
-
 apiWithProvider.getData()
   .then((tripInfo) => {
     const {events, destinations, offers} = tripInfo;
@@ -73,6 +59,29 @@ apiWithProvider.getData()
     tripController.getData(destinations, offers);
     remove(loading);
     tripController.render();
+
+    tripTab.setOnClick((tabItem) => {
+      switch (tabItem) {
+        case TabItem.STATISTICS:
+          tripController.hide();
+          statistics.show();
+          break;
+        case TabItem.EVENTS:
+          statistics.hide();
+          tripController.show();
+          tripController.onSortTypeReset();
+          break;
+      }
+    });
+  })
+  .catch(() => {
+    pointsModel.setEvents([]);
+    render(tripMainElement, new TripInfo(pointsModel.getEventsAll()), RenderPosition.AFTERBEGIN);
+    remove(loading);
+    tripController.render();
+    newEvent.disabled = true;
+    pageMain.querySelector(`.trip-events__msg`).textContent = `An error occurred while loading data.`;
+    document.querySelectorAll(`.trip-filters__filter-input`).forEach((filter) => (filter.disabled = true));
   });
 
 window.addEventListener(`load`, () => {
