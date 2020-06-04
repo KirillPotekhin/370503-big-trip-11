@@ -55,6 +55,10 @@ export default class TripSort extends AbstractComponent {
     return this._currentSortType;
   }
 
+  resetSortType() {
+    this._currentSortType = SortType.DEFAULT;
+  }
+
   setSortTypeChangeHandler(handler) {
     this.getElement().addEventListener(`click`, (evt) => {
       if (evt.target.tagName !== `LABEL`) {
@@ -63,13 +67,13 @@ export default class TripSort extends AbstractComponent {
 
       const sortType = evt.target.dataset.sortType;
 
-      if (this._currenSortType === sortType) {
+      if (this._currentSortType === sortType) {
         return;
       }
 
-      this._currenSortType = sortType;
+      this._currentSortType = sortType;
 
-      handler(this._currenSortType);
+      handler(this._currentSortType);
     });
   }
   reserSortChecked() {

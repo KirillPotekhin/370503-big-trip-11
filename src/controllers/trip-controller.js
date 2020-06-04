@@ -273,11 +273,13 @@ export default class TripController {
     this._updateEvents();
     this._onSortTypeChange(SortType.DEFAULT);
     this._tripSort.reserSortChecked();
+    this._tripSort.resetSortType();
   }
 
   onSortTypeReset() {
     this._updateEvents();
     this._onSortTypeChange(SortType.DEFAULT);
     this._tripSort.reserSortChecked();
+    this._tripSort.resetSortType();
   }
 }

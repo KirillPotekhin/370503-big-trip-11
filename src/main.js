@@ -45,7 +45,7 @@ newEvent.addEventListener(`click`, () => {
   tripTab.setActiveItem(TabItem.EVENTS);
   statistics.hide();
   tripController.show();
-  // tripController.onSortTypeReset();
+  tripController.onSortTypeReset();
   filterController.onFilterChange(FilterTypes.EVERYTHING);
   filterController.render();
   tripController.createEvent();
